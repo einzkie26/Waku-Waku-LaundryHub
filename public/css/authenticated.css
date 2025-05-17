@@ -1,0 +1,39 @@
+/* authenticated.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+}
+
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-title {
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+form .form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 10px;
+}
+
+form .btn {
+    padding: 12px;
+    font-size: 1.1rem;
+}
+
+.text-center a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.text-center a:hover {
+    text-decoration: underline;
+}
