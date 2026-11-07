@@ -3,45 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Waku Laundry Monitoring and Services</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="Book a laundry pickup, see your total, and follow every step with Waku-Waku Laundryhub.">
+    <title>@yield('title', 'A little less laundry. A little more life.') · Waku-Waku Laundryhub</title>
+    <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="{{ asset('css/index.css') }}" rel="stylesheet">
-    <script src="https://unpkg.com/htmx.org@1.7.0"></script>
+    <link href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+    <link href="{{ asset('vendor/fontawesome/css/all.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/laundryhub.css') }}" rel="stylesheet">
+    @stack('styles')
 </head>
 <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     @include('partials.navbar')
-
-    <main class="mt-5 pt-4">
+    <main id="main-content" class="site-main" tabindex="-1">
+        <div class="container">@include('partials.feedback')</div>
         @yield('content')
     </main>
-
     @include('partials.footer')
-
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-    <script
-  src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"
-  type="module"
-></script>
-    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-    @push('scripts')
-    <script src="{{ asset('js/scripts.js') }}"></script>
-    @endpush
-    <script>
-    AOS.init();
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const toastElList = [].slice.call(document.querySelectorAll('.toast'));
-            const toastList = toastElList.map(function (toastEl) {
-                return new bootstrap.Toast(toastEl, { delay: 4000 });
-            });
-            toastList.forEach(toast => toast.show());
-        });
-    </>
+    <script src="{{ asset('js/laundryhub.js') }}" defer></script>
+    @stack('scripts')
 </body>
 </html>

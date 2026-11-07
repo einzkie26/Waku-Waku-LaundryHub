@@ -1,17 +1,11 @@
 @extends('layouts.app')
-
-@section('title', 'Waku Laundry - Order')
-
+@section('title', 'Book a pickup')
 @section('content')
-<section class="booking-section py-4">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div id="booking-form-wrapper">
-                    @include('booking.steps.step1')
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+<div class="container">
+    <div class="page-heading"><div><div class="eyebrow">One less thing on your list</div><h1>Let's lighten your load.</h1><p>Choose your laundry service, schedule a pickup, and check your total.</p></div><a href="{{ route('customer.orders.history') }}">Back to my orders</a></div>
+    @if(!auth()->user()->phone || !auth()->user()->address)
+        <div class="alert alert-warning mb-4">Before you start, <a href="{{ route('profile.settings') }}">add your phone number and pickup address</a> so our team can collect your laundry.</div>
+    @endif
+    @include('components.laundry-booking-form', ['operator' => false, 'action' => route('booking.store')])
+</div>
 @endsection

@@ -12,6 +12,7 @@ use App\Http\Controllers\UserLogController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\CustomerBookingController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\StaffLoginController;
 use App\Http\Controllers\AdminDashboardController;
@@ -66,6 +67,8 @@ Route::get('/order-tracking/{reference}', [OrderController::class, 'orderTrackin
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
+    Route::get('/booking', [CustomerBookingController::class, 'create'])->name('booking.create');
+    Route::post('/booking', [CustomerBookingController::class, 'store'])->name('booking.store');
     // Logout
     Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
@@ -153,9 +156,9 @@ Route::middleware(['staff.auth'])->prefix('staff')->name('staff.')->group(functi
     Route::get('/attendance', [StaffLoginController::class, 'attendance'])->name('attendance');
     Route::post('/attendance/mark', [StaffLoginController::class, 'markAttendance'])->name('attendance.mark');
     Route::get('/history', [StaffLoginController::class, 'history'])->name('history');
-    Route::get('/tasks', [StaffLoginController::class, 'tasks'])->name('tasks');
-    Route::post('/tasks', [StaffLoginController::class, 'storeTask'])->name('tasks.store');
-    Route::get('/tasks/create', [StaffLoginController::class, 'createTask'])->name('tasks.create');
+    Route::get('/tasks', fn () => redirect()->route('staff.orders.index'))->name('tasks');
+    Route::post('/tasks', [StaffLoginController::class, 'storeOrder'])->name('tasks.store');
+    Route::get('/tasks/create', fn () => redirect()->route('staff.orders.create'))->name('tasks.create');
     Route::get('/store/{order}', [StaffLoginController::class, 'showStore'])->name('store');
     Route::get('/reports', [StaffLoginController::class, 'reports'])->name('reports');
     Route::get('/reports/daily', [StaffLoginController::class, 'dailyReport'])->name('reports.daily');
@@ -181,7 +184,7 @@ Route::middleware(['staff.auth'])->prefix('staff')->name('staff.')->group(functi
     Route::put('/orders/{order}', [StaffLoginController::class, 'updateOrder'])->name('orders.update');
     Route::delete('/orders/{order}', [StaffLoginController::class, 'deleteOrder'])->name('orders.delete');
     Route::post('/orders/{order}/status', [StaffLoginController::class, 'updateOrderStatus'])->name('orders.status');
-    Route::post('/orders/{order}/pay', [StaffLoginController::class, 'markAsPaid'])->name('staff.orders.pay');
+    Route::post('/orders/{order}/pay', [StaffLoginController::class, 'markAsPaid'])->name('orders.pay');
 });
 
 Route::get('/receipt/{order}', [App\Http\Controllers\OrderController::class, 'showReceipt'])->name('receipt.show');

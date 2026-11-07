@@ -36,7 +36,7 @@ class LoginController extends Controller
             }
 
             session()->flash('success', 'Welcome back, ' . $user->name);
-            return redirect()->route('landing');
+            return redirect()->intended(route('landing'));
         }
 
         return back()->withErrors([

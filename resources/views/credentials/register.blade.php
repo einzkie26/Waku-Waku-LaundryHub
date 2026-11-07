@@ -1,110 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up Page</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
-</head>
-<body>
-    <div class="container">
-        <div class="row justify-content-center align-items-center min-vh-100">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <img src="{{ asset('img/logo.png') }}" alt="Waku Logo" style="height: 100px; width: auto; display: block; margin: 0 auto;">
-                        <h3 class="card-title text-center">Create Account</h3>
-                        <form hx-post="{{ route('register') }}" hx-target="#register-response" hx-swap="innerHTML" method="POST">
-                            @csrf
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Name:</label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
-                                @error('name')
-                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Username:</label>
-                                <input type="text" class="form-control @error('username') is-invalid @enderror" id="username" name="username" value="{{ old('username') }}" required>
-                                @error('username')
-                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label for="phone" class="form-label">Phone Number:</label>
-                                <input type="number" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone') }}" required>
-                                @error('phone')
-                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label for="address" class="form-label">Full Address:</label>
-                                <input type="text" class="form-control @error('address') is-invalid @enderror" id="address" name="address" value="{{ old('address') }}" required>
-                                @error('address')
-                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password:</label>
-                                <div class="input-group">
-                                    <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" required>
-                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                                @error('password')
-                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label for="password_confirmation" class="form-label">Confirm Password:</label>
-                                <div class="input-group">
-                                    <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" id="password_confirmation" name="password_confirmation" required>
-                                    <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                                @error('password_confirmation')
-                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Create Account</button>
-                        </form>
-                        <div id="register-response" class="mt-3"></div>
-                        <div class="mt-3 text-center">
-                            <p>Already have an account? <a href="{{ route('login.form') }}" class="text-decoration-none">Sign In</a></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle main password
-    const togglePassword = document.querySelector('#togglePassword');
-    const password = document.querySelector('#password');
-
-    togglePassword.addEventListener('click', function() {
-        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-        password.setAttribute('type', type);
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
-    });
-
-    // Toggle confirm password
-    const toggleConfirmPassword = document.querySelector('#toggleConfirmPassword');
-    const confirmPassword = document.querySelector('#password_confirmation');
-
-    toggleConfirmPassword.addEventListener('click', function() {
-        const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
-        confirmPassword.setAttribute('type', type);
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
-    });
-});
-</script>
-</html>
+@extends('layouts.app')
+@section('title', 'Create an account')
+@section('content')
+<div class="auth-shell">
+    <div class="auth-copy"><div class="eyebrow">Make room for a lighter day</div><h1>A fresh start, one load at a time.</h1><p>Create your account so we know where to collect your laundry and how to reach you.</p><div class="notice mt-4">Your phone and address are used for pickup. You can update them in Profile settings.</div></div>
+    <section class="surface auth-card"><h2>Join the fresh side.</h2><p class="text-muted small mb-4">A few details, then you are ready to book.</p>
+        <form method="POST" action="{{ route('register') }}" data-single-submit>@csrf
+            @foreach(['name' => ['Full name', 'name', 'text'], 'username' => ['Username', 'username', 'text'], 'phone' => ['Phone number', 'tel', 'tel']] as $field => [$label, $autocomplete, $type])
+            <div class="mb-3"><label class="form-label" for="{{ $field }}">{{ $label }}</label><input class="form-control @error($field) is-invalid @enderror" id="{{ $field }}" name="{{ $field }}" type="{{ $type }}" autocomplete="{{ $autocomplete }}" value="{{ old($field) }}" maxlength="{{ $field === 'phone' ? 20 : 255 }}" required></div>
+            @endforeach
+            <div class="mb-3"><label class="form-label" for="address">Pickup address</label><textarea class="form-control" id="address" name="address" autocomplete="street-address" maxlength="255" rows="2" placeholder="House / unit, street, barangay, city" required>{{ old('address') }}</textarea></div>
+            <div class="mb-3"><label class="form-label" for="password">Password</label><div class="input-group"><input class="form-control" type="password" id="password" name="password" autocomplete="new-password" minlength="6" required><button class="btn btn-light" type="button" data-toggle-password="password" aria-pressed="false">Show</button></div><p class="form-text">Use at least 6 characters.</p></div>
+            <div class="mb-4"><label class="form-label" for="password_confirmation">Confirm password</label><input class="form-control" type="password" id="password_confirmation" name="password_confirmation" autocomplete="new-password" minlength="6" required></div>
+            <button class="btn btn-primary" type="submit">Create account</button>
+        </form>
+        <p class="auth-footnote">Already have an account? <a href="{{ route('login.form') }}">Sign in</a></p>
+    </section>
+</div>
+@endsection

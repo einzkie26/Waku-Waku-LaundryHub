@@ -11,16 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
-        return [
-            // Other settings...
-
-            'middleware' => [
-                'staff.auth' => \App\Http\Middleware\StaffAuth::class,
-            ],
-
-            // Other settings...
-        ];
+        $middleware->alias(['staff.auth' => \App\Http\Middleware\StaffAuth::class]);
+        $middleware->redirectGuestsTo(fn () => route('login.form'));
+        $middleware->redirectUsersTo(fn () => auth()->user()?->role === 'admin' ? route('admin.dashboard') : route('landing'));
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

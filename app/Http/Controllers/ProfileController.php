@@ -16,14 +16,16 @@ class ProfileController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
             'password' => 'nullable|string|min:8|confirmed',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $user->name = $request->input('name');
         $user->username = $request->input('username');
+        $user->phone = $request->input('phone');
+        $user->address = $request->input('address');
         $loggedChanges = [];
 
         if ($request->filled('password')) {

@@ -41,7 +41,7 @@ class StaffAuth
         
         // Verify the employee still exists and is active
         $employee = Employee::where('id', Session::get('staff_id'))
-                          ->where('status', 'active')
+                          ->whereRaw('LOWER(status) = ?', ['active'])
                           ->first();
                           
         if (!$employee) {

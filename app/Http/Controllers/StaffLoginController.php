@@ -50,7 +50,7 @@ class StaffLoginController extends Controller
                     ]);
             }
 
-            if ($employee->status !== 'Active') {
+            if (strtolower($employee->status) !== 'active') {
                 Log::warning('Inactive staff login attempt', [
                     'employee_id' => $employee->id,
                     'name' => $employee->name,
@@ -64,6 +64,7 @@ class StaffLoginController extends Controller
             // Successful login
             Session::forget('staff_id');
             Session::put('staff_id', $employee->id);
+            $request->session()->regenerate();
             
             if ($request->filled('remember')) {
                 Session::put('remember_staff', true);
@@ -91,86 +92,17 @@ class StaffLoginController extends Controller
 
     public function dashboard()
     {
-        $staffId = Session::get('staff_id');
-        if (!$staffId) {
-            return redirect()->route('staff.login.form')
-                           ->with('error', 'Please login to access the dashboard.');
-        }
-
-        $employee = Employee::findOrFail($staffId);
-        
-        $todayTasks = Order::whereDate('created_at', Carbon::today())
-                          ->where('status', '!=', 'Completed')
-                          ->count();
-
-        $completedTasks = Order::whereHas('statusHistories', function($query) use ($staffId) {
-            $query->where('changed_by_id', $staffId)
-                  ->where('changed_by_type', 'staff')
-                  ->where('status', 'Completed')
-                  ->whereDate('created_at', Carbon::today());
-        })->count();
-
-        $todayAttendance = Attendance::where('employee_id', $staffId)
-                                   ->whereDate('date', Carbon::today())
-                                   ->first();
-                                   
-        $attendanceStatus = [
-            'status' => $todayAttendance ? 'checked_in' : 'not_checked_in',
-            'time' => $todayAttendance ? Carbon::parse($todayAttendance->check_in)->format('h:i A') : null
+        $employee = request()->attributes->get('staff');
+        $counts = [
+            'active' => Order::whereNotIn('status', ['Completed', 'Refunded'])->count(),
+            'ready' => Order::where('status', 'Ready')->count(),
+            'unpaid' => Order::where('payment_status', 'pending')->where('status', '!=', 'Refunded')->count(),
+            'completed' => Order::where('status', 'Completed')->whereDate('completion_date', today())->count(),
         ];
+        $orders = Order::with('user')->whereNotIn('status', ['Completed', 'Refunded'])
+            ->orderBy('date')->orderBy('time')->take(6)->get();
 
-        $workHours = Attendance::where('employee_id', $staffId)
-                             ->whereDate('date', Carbon::today())
-                             ->whereNotNull('check_out')
-                             ->get()
-                             ->sum(function($record) {
-                                 return Carbon::parse($record->check_out)
-                                             ->diffInHours(Carbon::parse($record->check_in));
-                             });
-
-        $recentOrders = Order::whereHas('statusHistories', function($query) use ($staffId) {
-            $query->where('changed_by_id', $staffId)
-                  ->where('changed_by_type', 'staff');
-        })
-        ->with('user')
-        ->latest()
-        ->take(5)
-        ->get()
-        ->map(function($order) {
-            return (object)[
-                'reference' => $order->reference_no,
-                'customer_name' => $order->user ? $order->user->name : 'N/A',
-                'status' => $order->status,
-                'status_color' => $this->getStatusColor($order->status),
-                'due_date' => Carbon::parse($order->date),
-                'created_at' => $order->created_at,
-                'items_count' => 1
-            ];
-        });
-
-        $attendanceHistory = Attendance::where('employee_id', $staffId)
-                                     ->latest()
-                                     ->take(5)
-                                     ->get()
-                                     ->map(function($record) {
-                                         return (object)[
-                                             'date' => Carbon::parse($record->date),
-                                             'check_in' => Carbon::parse($record->check_in)->format('h:i A'),
-                                             'check_out' => $record->check_out ? Carbon::parse($record->check_out)->format('h:i A') : null,
-                                             'status' => $record->status,
-                                             'status_color' => $this->getAttendanceStatusColor($record->status)
-                                         ];
-                                     });
-
-        return view('staff.dashboard', compact(
-            'employee',
-            'todayTasks',
-            'completedTasks',
-            'attendanceStatus',
-            'workHours',
-            'recentOrders',
-            'attendanceHistory'
-        ));
+        return view('staff.dashboard', compact('employee', 'counts', 'orders'));
     }
 
     public function tasks()
@@ -568,131 +500,60 @@ class StaffLoginController extends Controller
 
     public function showStore($orderId)
     {
-        $staffId = Session::get('staff_id');
-        if (!$staffId) {
-            return redirect()->route('staff.login.form')
-                           ->with('error', 'Please login to view order details.');
-        }
-
-        $order = Order::with('user')->findOrFail($orderId);
-        return view('staff.store', compact('order'));
+        return $this->showOrder($orderId);
     }
 
-    public function orders()
+    public function orders(Request $request)
     {
-        $staffId = Session::get('staff_id');
-        if (!$staffId) {
-            return redirect()->route('staff.login.form')
-                           ->with('error', 'Please login to view orders.');
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', \Illuminate\Validation\Rule::in(['active', 'all', 'unpaid', 'Pending', 'Picked Up', 'Washing', 'Drying', 'Processing', 'Ready', 'Completed', 'Refunded'])],
+        ]);
+        $employee = $request->attributes->get('staff');
+        $status = $request->query('status', 'active');
+        $counts = [
+            'active' => Order::whereNotIn('status', ['Completed', 'Refunded'])->count(),
+            'ready' => Order::where('status', 'Ready')->count(),
+            'unpaid' => Order::where('payment_status', 'pending')->where('status', '!=', 'Refunded')->count(),
+            'completed' => Order::where('status', 'Completed')->count(),
+        ];
+        $query = Order::with('user');
+        if ($status === 'active') {
+            $query->whereNotIn('status', ['Completed', 'Refunded']);
+        } elseif ($status === 'unpaid') {
+            $query->where('payment_status', 'pending')->where('status', '!=', 'Refunded');
+        } elseif ($status !== 'all') {
+            $query->where('status', $status);
         }
-
-        $employee = Employee::findOrFail($staffId);
-        
-        $orders = Order::with('user')
-            ->where('operator_id', $employee->id)
-            ->where('operator_type', 'staff')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($order) {
-                return (object)[
-                    'id' => $order->id,
-                    'reference_no' => $order->reference_no,
-                    'customer_name' => $order->user ? $order->user->name : 'N/A',
-                    'service' => $order->service,
-                    'weight' => $order->weight,
-                    'total_price' => $order->total_price,
-                    'status' => $order->status,
-                    'pickup_date' => $order->date
-                ];
+        if ($request->filled('q')) {
+            $term = trim($request->query('q'));
+            $query->where(function ($query) use ($term) {
+                $query->where('reference_no', 'like', '%'.$term.'%')
+                    ->orWhereHas('user', fn ($customer) => $customer->where('name', 'like', '%'.$term.'%')->orWhere('phone', 'like', '%'.$term.'%'));
             });
+        }
+        $orders = $query->orderBy('date')->orderBy('time')->latest('id')->paginate(12)->withQueryString();
 
-        return view('staff.orders.index', compact('employee', 'orders'));
+        return view('staff.orders.index', compact('employee', 'orders', 'counts', 'status'));
     }
 
     public function showOrder($id)
     {
-        $order = Order::with('user')->findOrFail($id);
-        
-        return view('staff.store', [
-            'order' => (object)[
-                'id' => $order->id,
-                'reference_no' => $order->reference_no,
-                'customer_name' => $order->user ? $order->user->name : 'N/A',
-                'customer_phone' => $order->user ? $order->user->phone : 'N/A',
-                'customer_address' => $order->user ? $order->user->address : 'N/A',
-                'service' => $order->service,
-                'weight' => $order->weight,
-                'total_price' => $order->total_price,
-                'status' => $order->status,
-                'pickup_date' => $order->date,
-                'pickup_time' => $order->time
-            ]
-        ]);
+        $order = Order::with(['user', 'statusHistories'])->findOrFail($id);
+        return view('staff.store', compact('order'));
     }
 
     public function updateOrderStatus(Request $request, $id)
     {
-        $staffId = Session::get('staff_id');
-        if (!$staffId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ]);
-        }
+        $data = $request->validate(['current_status' => ['required', 'string', 'max:40']]);
+        $order = app(\App\Services\LaundryOrderService::class)->advance(
+            Order::findOrFail($id), 'staff', (int) Session::get('staff_id'), $data['current_status']
+        );
+        $message = 'Order '.$order->reference_no.': '.\App\Support\LaundryWorkflow::label($order->status).'.';
 
-        $order = Order::findOrFail($id);
-        
-        // Prevent status updates for refunded orders
-        if ($order->status === 'Refunded') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cannot update status of refunded orders'
-            ]);
-        }
-
-        // Define status flows for different services
-        $statusFlows = [
-            'Wash & Fold' => ['Pending', 'Picked Up', 'Washing', 'Drying', 'Ready', 'Completed'],
-            'Dry Cleaning' => ['Pending', 'Picked Up', 'Processing', 'Ready', 'Completed'],
-            'Express Service' => ['Pending', 'Picked Up', 'Processing', 'Ready', 'Completed'],
-            'Ironing' => ['Pending', 'Picked Up', 'Processing', 'Ready', 'Completed']
-        ];
-
-        $statusSteps = $statusFlows[$order->service] ?? $statusFlows['Wash & Fold'];
-        $currentIndex = array_search($order->status, $statusSteps);
-        
-        // If current status is not found or is the last status, return error
-        if ($currentIndex === false || $currentIndex === count($statusSteps) - 1) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cannot advance status further'
-            ]);
-        }
-
-        // Get the next status
-        $newStatus = $statusSteps[$currentIndex + 1];
-
-        // Update the order status
-        $order->status = $newStatus;
-        $order->save();
-
-        // Create status history entry
-        OrderStatusHistory::create([
-            'order_id' => $order->id,
-            'status' => $newStatus,
-            'changed_by_type' => 'staff',
-            'changed_by_id' => $staffId
-        ]);
-
-        // If order is marked as completed, notify the user
-        if ($newStatus === 'Completed') {
-            $order->user->notify(new OrderCompleted($order));
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Order status updated successfully'
-        ]);
+        return $request->expectsJson()
+            ? response()->json(['success' => true, 'message' => $message])
+            : back()->with('success', $message);
     }
 
     public function reports()
@@ -926,136 +787,102 @@ class StaffLoginController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function customers(Request $request)
+    {
+        $request->validate(['q' => ['nullable', 'string', 'max:100']]);
+        $query = User::where('role', 'customer')->withCount('orders');
+        if ($request->filled('q')) {
+            $term = trim($request->query('q'));
+            $query->where(fn ($query) => $query->where('name', 'like', '%'.$term.'%')->orWhere('phone', 'like', '%'.$term.'%'));
+        }
+        $customers = $query->orderBy('name')->paginate(15)->withQueryString();
+        return view('staff.customers.index', compact('customers'));
+    }
+
+    public function createCustomer()
+    {
+        return view('staff.customers.create');
+    }
+
+    public function storeCustomer(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username'],
+            'phone' => ['required', 'string', 'max:20'],
+            'address' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+        $customer = User::create($data + ['role' => 'customer']);
+        return redirect()->route('staff.orders.create', ['customer' => $customer->id])
+            ->with('success', 'Customer added and selected. Continue with their laundry order.');
+    }
+
+    public function showCustomer($customer)
+    {
+        $customer = User::where('role', 'customer')->findOrFail($customer);
+        $orders = $customer->orders()->latest()->paginate(10);
+        return view('staff.customers.show', compact('customer', 'orders'));
+    }
+
+    public function editCustomer($customer)
+    {
+        $customer = User::where('role', 'customer')->findOrFail($customer);
+        return view('staff.customers.edit', compact('customer'));
+    }
+
+    public function updateCustomer(Request $request, $customer)
+    {
+        $customer = User::where('role', 'customer')->findOrFail($customer);
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', \Illuminate\Validation\Rule::unique('users', 'username')->ignore($customer->id)],
+            'phone' => ['required', 'string', 'max:20'],
+            'address' => ['required', 'string', 'max:255'],
+        ]);
+        $customer->update($data);
+        return redirect()->route('staff.customers.show', $customer->id)->with('success', 'Customer details updated.');
+    }
+
     public function createOrder()
     {
-        if (!Session::has('staff_id')) {
-            return redirect()->route('staff.login.form');
-        }
-
-        $employee = Employee::find(Session::get('staff_id'));
-        if (!$employee) {
-            return redirect()->route('staff.login.form');
-        }
-
-        $customers = User::where('role', 'customer')->get();
-
-        return view('staff.orders.create', compact('employee', 'customers'));
+        $customers = User::where('role', 'customer')->orderBy('name')->get();
+        return view('staff.orders.create', compact('customers'));
     }
 
     public function storeOrder(Request $request)
     {
-        if (!Session::has('staff_id')) {
-            return redirect()->route('staff.login.form');
-        }
+        $data = $request->validate(\App\Support\LaundryWorkflow::rules(true));
+        $order = app(\App\Services\LaundryOrderService::class)->create(
+            $data, (int) $data['user_id'], 'staff', (int) Session::get('staff_id')
+        );
 
-        $employee = Employee::find(Session::get('staff_id'));
-        if (!$employee) {
-            return redirect()->route('staff.login.form');
-        }
-
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'service' => 'required|string',
-            'laundry_style' => 'required|string',
-            'fabric_type' => 'required|string',
-            'weight' => 'required|numeric|min:0.1',
-            'date' => 'required|date',
-            'time' => 'required|string',
-            'special_instructions' => 'nullable|string',
-            'additional_services' => 'nullable|array',
-            'payment_status' => 'nullable|in:pending,paid',
-            'payment_method' => 'nullable|string',
-            'payment_reference' => 'nullable|string',
-        ]);
-
-        $priceList = [
-            'Wash & Fold' => 50,
-            'Dry Cleaning' => 70,
-            'Express Service' => 100,
-            'Ironing' => 40,
-        ];
-
-        $pricePerKg = $priceList[$request->service] ?? 0;
-        $basePrice = $pricePerKg * $request->weight;
-
-        // Calculate additional charges
-        $additionalCharges = 0;
-        $additionalServices = [];
-        if ($request->has('additional_services')) {
-            $servicePrices = [
-                'Starch' => 20,
-                'Fabric Softener' => 15,
-                'Express Processing' => 50
-            ];
-            
-            foreach ($request->additional_services as $service) {
-                if (isset($servicePrices[$service])) {
-                    $additionalCharges += $servicePrices[$service];
-                    $additionalServices[] = $service;
-                }
-            }
-        }
-
-        // Generate a unique reference number
-        do {
-            $referenceNo = 'REF-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 5));
-        } while (Order::where('reference_no', $referenceNo)->exists());
-
-        $order = Order::create([
-            'user_id' => $request->user_id,
-            'service' => $request->service,
-            'laundry_style' => $request->laundry_style,
-            'fabric_type' => $request->fabric_type,
-            'special_instructions' => $request->special_instructions,
-            'additional_services' => $additionalServices,
-            'additional_charges' => $additionalCharges,
-            'weight' => $request->weight,
-            'date' => $request->date,
-            'time' => $request->time,
-            'total_price' => $basePrice,
-            'total_amount' => $basePrice + $additionalCharges,
-            'status' => 'Pending',
-            'reference_no' => $referenceNo,
-            'payment_status' => $request->payment_status ?? 'pending',
-            'payment_method' => $request->payment_method,
-            'payment_reference' => $request->payment_reference,
-            'paid_at' => ($request->payment_status === 'paid') ? now() : null,
-            'operator_type' => 'staff',
-            'operator_id' => $employee->id,
-        ]);
-
-        // Log order creation in order_status_histories
-        OrderStatusHistory::create([
-            'order_id' => $order->id,
-            'status' => 'Created',
-            'changed_by_type' => 'staff',
-            'changed_by_id' => $employee->id,
-        ]);
-
-        // Create notification for the customer
-        Notification::create([
-            'title' => 'New Order Created',
-            'message' => "Your order #{$referenceNo} has been created successfully.",
-            'type' => 'order_created',
-            'action_url' => route('order.tracking', $referenceNo),
-            'notifiable_id' => $request->user_id,
-            'notifiable_type' => User::class,
-        ]);
-
-        return redirect()->route('staff.store', $order->id)
-            ->with('success', 'Order created successfully!');
+        return redirect()->route('staff.orders.show', $order->id)
+            ->with('success', 'Order created. Confirm pickup when the laundry has been collected.');
     }
 
     public function markAsPaid(Request $request, $orderId)
     {
-        $order = \App\Models\Order::findOrFail($orderId);
+        $data = $request->validate([
+            'payment_method' => ['required', \Illuminate\Validation\Rule::in(['Cash', 'GCash', 'Bank'])],
+            'payment_reference' => ['nullable', 'string', 'max:100', 'required_if:payment_method,GCash,Bank'],
+        ]);
+        $order = Order::findOrFail($orderId);
+        if ($order->status === 'Refunded') {
+            return back()->with('error', 'A refunded order cannot be marked as paid.');
+        }
+        if ($order->payment_status === 'paid') {
+            return back()->with('success', 'Payment has already been recorded for this order.');
+        }
         $order->update([
             'payment_status' => 'paid',
-            'payment_method' => $request->payment_method,
-            'payment_reference' => $request->payment_reference,
+            'payment_method' => $data['payment_method'],
+            'payment_reference' => $data['payment_reference'] ?? null,
             'paid_at' => now(),
         ]);
-        return back()->with('success', 'Order marked as paid.');
+        return back()->with('success', 'Payment recorded. Laundry progress is shown separately.');
     }
+
+
 }
 

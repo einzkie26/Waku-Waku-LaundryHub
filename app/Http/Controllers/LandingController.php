@@ -10,13 +10,14 @@ class LandingController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $order = [];
+        $activeOrders = collect();
 
         if ($user) {
-            $order = Order::where('user_id', $user->id)->latest()->get();
+            $activeOrders = Order::where('user_id', $user->id)
+                ->whereNotIn('status', ['Completed', 'Refunded'])->latest()->take(3)->get();
         }
 
-        return view('landing', compact('user', 'order'));
+        return view('landing', compact('user', 'activeOrders'));
     }
 
     public function landingPage()

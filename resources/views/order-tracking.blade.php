@@ -1,131 +1,21 @@
 @extends('layouts.app')
-
+@section('title', 'Track '.$order->reference_no)
 @section('content')
-<div class="container py-4">
-    <div class="card shadow-sm">
-        <div class="card-header bg-white">
-            <h4 class="mb-0">Track Your Order</h4>
+<div class="container">
+    <div class="page-heading"><div><a href="{{ route('customer.orders.history') }}" class="small d-inline-block mb-3">← My orders</a><h1>Your laundry, in the loop.</h1><p><span class="reference">{{ $order->reference_no }}</span> · {{ $order->service }}</p></div>@include('components.order-status', ['order' => $order])</div>
+    <div class="detail-grid">
+        <div>
+            <section class="surface mb-4"><div class="eyebrow">What happens next</div><h2>{{ \App\Support\LaundryWorkflow::label($order->status) }}</h2>@include('components.order-timeline', ['order' => $order])</section>
+            <section class="surface"><h2>Order updates</h2><ul class="activity-list">
+                @forelse($order->statusHistories->sortByDesc('created_at') as $history)
+                    <li><span>{{ $history->status === 'Created' ? 'Booking received' : \App\Support\LaundryWorkflow::label($history->status) }}</span><time datetime="{{ $history->created_at->toIso8601String() }}">{{ $history->created_at->format('M j, Y · g:i A') }}</time></li>
+                @empty<li><span>Your order has been received. New updates appear here.</span></li>@endforelse
+            </ul></section>
         </div>
-        <div class="card-body">
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <h5>Order Details</h5>
-                    <dl class="row">
-                        <dt class="col-sm-4">Reference No.</dt>
-                        <dd class="col-sm-8">{{ $order->reference_no }}</dd>
-
-                        <dt class="col-sm-4">Service</dt>
-                        <dd class="col-sm-8">{{ $order->service }}</dd>
-
-                        <dt class="col-sm-4">Weight</dt>
-                        <dd class="col-sm-8">{{ $order->weight }} kg</dd>
-
-                        <dt class="col-sm-4">Total Amount</dt>
-                        <dd class="col-sm-8">₱{{ number_format($order->total_price, 2) }}</dd>
-                    </dl>
-                </div>
-            </div>
-
-            <h5 class="mb-3">Order Status</h5>
-            <div class="tracking-progress">
-                @foreach($statusSteps as $index => $status)
-                    <div class="tracking-step {{ $index <= $currentStepIndex ? 'active' : '' }}">
-                        <div class="step-icon">
-                            @if($index < $currentStepIndex)
-                                <i class="fas fa-check-circle"></i>
-                            @elseif($index == $currentStepIndex)
-                                <i class="fas fa-circle"></i>
-                            @else
-                                <i class="far fa-circle"></i>
-                            @endif
-                        </div>
-                        <div class="step-content">
-                            <h6>{{ $status }}</h6>
-                            <p class="text-muted mb-0">{{ $statusDescriptions[$status] }}</p>
-                        </div>
-                        @if($index < count($statusSteps) - 1)
-                            <div class="step-line {{ $index < $currentStepIndex ? 'active' : '' }}"></div>
-                        @endif
-                    </div>
-                @endforeach
-            </div>
+        <div>
+            <section class="surface mb-4"><h2 class="mb-4">Order total</h2>@include('components.order-price', ['order' => $order])<a href="{{ route('receipt.show', $order->id) }}" class="btn btn-light w-100 mt-4" target="_blank" rel="noopener"><i class="bi bi-receipt me-2" aria-hidden="true"></i>View receipt</a></section>
+            <section class="surface"><h2 class="mb-4">Pickup details</h2><dl class="detail-list"><div><dt>Date</dt><dd>{{ \Carbon\Carbon::parse($order->date)->format('M j, Y') }}</dd></div><div><dt>Time</dt><dd>{{ \Carbon\Carbon::parse($order->time)->format('g:i A') }}</dd></div></dl><div class="pickup-contact"><strong>{{ $order->user?->name }}</strong><p>{{ $order->user?->phone }}</p><p>{{ $order->user?->address }}</p></div><p class="form-text mb-0">This appointment is for collection. Delivery is arranged when your laundry is ready.</p>@if($order->special_instructions)<hr><h3 class="h6">Your instructions</h3><p class="small mb-0">{{ $order->special_instructions }}</p>@endif</section>
         </div>
     </div>
 </div>
-
-{{-- Order Status History Section --}}
-<div class="container py-2">
-    <div class="card shadow-sm">
-        <div class="card-header bg-white">
-            <h5 class="mb-0">Order Status History</h5>
-        </div>
-        <div class="card-body">
-            <ul class="list-group mb-3">
-                @foreach($order->statusHistories()->orderBy('created_at')->get() as $history)
-                    <li class="list-group-item">
-                        <strong>{{ $history->status }}</strong>
-                        by
-                        @if($history->changed_by_type === 'admin')
-                            {{ \App\Models\User::find($history->changed_by_id)?->name ?? 'Admin' }} (Admin)
-                        @elseif($history->changed_by_type === 'staff')
-                            {{ \App\Models\Employee::find($history->changed_by_id)?->name ?? 'Staff' }} (Staff)
-                        @else
-                            Unknown
-                        @endif
-                        at {{ $history->created_at->format('Y-m-d H:i') }}
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    </div>
-</div>
-
-<style>
-.tracking-progress {
-    position: relative;
-    padding: 20px 0;
-}
-
-.tracking-step {
-    position: relative;
-    padding-left: 45px;
-    margin-bottom: 30px;
-}
-
-.step-icon {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 30px;
-    height: 30px;
-    text-align: center;
-    line-height: 30px;
-    color: #ccc;
-}
-
-.tracking-step.active .step-icon {
-    color: #28a745;
-}
-
-.step-content {
-    padding: 0 15px;
-}
-
-.step-line {
-    position: absolute;
-    left: 15px;
-    top: 30px;
-    bottom: -30px;
-    width: 2px;
-    background: #ccc;
-}
-
-.step-line.active {
-    background: #28a745;
-}
-
-.tracking-step:last-child .step-line {
-    display: none;
-}
-</style>
 @endsection

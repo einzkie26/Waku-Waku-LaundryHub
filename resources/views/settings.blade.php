@@ -1,107 +1,25 @@
 @extends('layouts.app')
-
-@section('title', 'Settings - Waku')
-
+@section('title', 'Profile settings')
 @section('content')
-
-<section class="settings-section">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="settings-card">
-                    <h3>Account Settings</h3>
-
-                    @if (session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
-                    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
-
-                        <div class="mb-4">
-                            <label for="fullname" class="form-label">Full Name</label>
-                            <input type="text" name="name" class="form-control" id="fullname" value="{{ old('name', Auth::user()->name) }}" required>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" name="username" class="form-control" id="username" value="{{ old('username', Auth::user()->username ?? '') }}" required>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="phonenum" class="form-label">Phone Number</label>
-                            <input type="number" name="phonenum" class="form-control" id="phonenum" value="{{ old('phone', Auth::user()->phone ?? '') }}" required>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="address" class="form-label">Address</label>
-                            <input type="text" name="address" class="form-control" id="address" value="{{ old('address', Auth::user()->address ?? '') }}" required>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="password" class="form-label">New Password</label>
-                            <div class="input-group">
-                                <input type="password" name="password" class="form-control" id="password" placeholder="Enter new password">
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="confirmPassword" class="form-label">Confirm Password</label>
-                            <div class="input-group">
-                                <input type="password" name="password_confirmation" class="form-control" id="confirmPassword" placeholder="Confirm new password">
-                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="photo" class="form-label">Profile Photo</label>
-                            <input type="file" name="photo" class="form-control" id="photo">
-                        </div>
-
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                        </div>
-                    </form>
+<div class="container">
+    <div class="page-heading"><div><div class="eyebrow">Make yourself at home</div><h1>Profile settings</h1><p>Keep your contact details current so pickup goes smoothly.</p></div><a href="{{ route('booking.create') }}">Back to booking</a></div>
+    <div class="detail-grid">
+        <section class="surface"><h2 class="mb-4">Your details</h2>
+            <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" data-single-submit>@csrf @method('PUT')
+                <div class="row g-3">
+                    @foreach(['name' => ['Full name', 'text', 'name'], 'username' => ['Username', 'text', 'username'], 'phone' => ['Phone number', 'tel', 'tel']] as $field => [$label, $type, $autocomplete])
+                    <div class="{{ $field === 'phone' ? 'col-12' : 'col-sm-6' }}"><label class="form-label" for="{{ $field }}">{{ $label }}</label><input class="form-control" id="{{ $field }}" name="{{ $field }}" type="{{ $type }}" autocomplete="{{ $autocomplete }}" value="{{ old($field, auth()->user()->$field) }}" maxlength="{{ $field === 'phone' ? 20 : 255 }}" required></div>
+                    @endforeach
+                    <div class="col-12"><label class="form-label" for="address">Pickup address</label><textarea class="form-control" id="address" name="address" autocomplete="street-address" maxlength="255" required>{{ old('address', auth()->user()->address) }}</textarea></div>
+                    <div class="col-12"><label class="form-label" for="photo">Profile photo <span class="text-muted fw-normal">(optional)</span></label><input class="form-control" type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/gif"><p class="form-text">JPG, PNG, or GIF. Maximum 2 MB.</p></div>
+                    <div class="col-12"><hr><h3 class="h6">Change password</h3><p class="form-text">Leave both fields blank to keep your current password.</p></div>
+                    <div class="col-sm-6"><label class="form-label" for="password">New password</label><input class="form-control" id="password" name="password" type="password" minlength="8" autocomplete="new-password"></div>
+                    <div class="col-sm-6"><label class="form-label" for="password_confirmation">Confirm new password</label><input class="form-control" id="password_confirmation" name="password_confirmation" type="password" minlength="8" autocomplete="new-password"></div>
                 </div>
-            </div>
-        </div>
-        @include('modal.notification')
+                <button class="btn btn-primary mt-4" type="submit">Save changes</button>
+            </form>
+        </section>
+        <aside class="notice"><div class="notice-title">Ready for pickup</div><p>Include your house or unit number, street, barangay, and city. Use a phone number our team can reach on pickup day.</p></aside>
     </div>
-</section>
-@endsection
-
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle password
-    const togglePassword = document.querySelector('#togglePassword');
-    const password = document.querySelector('#password');
-
-    togglePassword.addEventListener('click', function() {
-        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-        password.setAttribute('type', type);
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
-    });
-
-    // Toggle confirm password
-    const toggleConfirmPassword = document.querySelector('#toggleConfirmPassword');
-    const confirmPassword = document.querySelector('#confirmPassword');
-
-    toggleConfirmPassword.addEventListener('click', function() {
-        const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
-        confirmPassword.setAttribute('type', type);
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
-    });
-});
-</script>
+</div>
 @endsection

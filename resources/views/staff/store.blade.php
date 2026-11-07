@@ -1,143 +1,43 @@
 @extends('layouts.staff-app')
-
-@section('title', 'Order Created')
-
+@section('title', 'Order details')
 @section('content')
-<div class="container-fluid p-0 m-0 pt-4">
-    <!-- Header -->
-    <div class="mb-4 px-3 wrapper">
-        <h2 class="text-dark">Order Created Successfully</h2>
+@php($next = \App\Support\LaundryWorkflow::nextStatus($order->service, $order->status))
+<div class="page-heading"><div><a href="{{ route('staff.orders.index') }}" class="small d-inline-block mb-3">← Order queue</a><h1>Order <span class="reference fs-4">{{ $order->reference_no }}</span></h1><p>{{ $order->user?->name ?? 'Customer unavailable' }} · {{ $order->service }}</p></div>@include('components.order-status', ['order' => $order])</div>
+<div class="detail-grid">
+    <div>
+        <section class="surface mb-4">
+            <div class="eyebrow">Keep this load moving</div><h2>Next action</h2>
+            @if($next)
+                <p class="text-muted small">Current progress: <strong>{{ \App\Support\LaundryWorkflow::label($order->status) }}</strong>. Update only after the next step has happened.</p>
+                <form method="POST" action="{{ route('staff.orders.status', $order->id) }}" data-single-submit>@csrf<input type="hidden" name="current_status" value="{{ $order->status }}"><button class="btn btn-primary" type="submit">{{ \App\Support\LaundryWorkflow::action($next) }} <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i></button></form>
+            @else
+                <div class="notice mt-3">{{ \App\Support\LaundryWorkflow::description($order->status) }}</div>
+            @endif
+            @include('components.order-timeline', ['order' => $order])
+        </section>
+        <section class="surface mb-4"><h2 class="mb-4">Customer & pickup</h2><dl class="detail-list"><div><dt>Customer</dt><dd>{{ $order->user?->name ?? 'Customer unavailable' }}</dd></div><div><dt>Phone</dt><dd>{{ $order->user?->phone ?? 'Not provided' }}</dd></div><div><dt>Pickup date</dt><dd>{{ \Carbon\Carbon::parse($order->date)->format('M j, Y') }}</dd></div><div><dt>Pickup time</dt><dd>{{ \Carbon\Carbon::parse($order->time)->format('g:i A') }}</dd></div></dl><div class="pickup-contact">{{ $order->user?->address ?? 'Address unavailable' }}</div>
+            <hr><dl class="detail-list mb-0"><div><dt>Wash preference</dt><dd>{{ $order->laundry_style ?: 'Regular Wash' }}</dd></div><div><dt>Fabric</dt><dd>{{ $order->fabric_type ?: 'Mixed' }}</dd></div></dl>
+            @if($order->special_instructions)<div class="notice mt-4"><div class="notice-title">Customer instructions</div><p>{{ $order->special_instructions }}</p></div>@endif
+        </section>
+        <section class="surface"><h2>Order activity</h2><ul class="activity-list">
+            @forelse($order->statusHistories->sortByDesc('created_at') as $history)<li><span>{{ $history->status === 'Created' ? 'Order created' : \App\Support\LaundryWorkflow::label($history->status) }}<small class="text-muted d-block">Updated by {{ $history->changed_by_type }}</small></span><time datetime="{{ $history->created_at->toIso8601String() }}">{{ $history->created_at->format('M j, Y · g:i A') }}</time></li>@empty<li>No activity recorded yet.</li>@endforelse
+        </ul></section>
     </div>
-
-    <!-- Order Details -->
-    <div class="px-3 wrapper">
-        <div class="card shadow p-4">
-            <!-- Customer Information -->
-            <div class="mb-4">
-                <h5 class="mb-3">Customer Information</h5>
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <p><strong>Name:</strong> {{ $order->user->name }}</p>
-                                <p><strong>Phone:</strong> {{ $order->user->phone }}</p>
-                                <p><strong>Address:</strong> {{ $order->user->address }}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><strong>Reference Number:</strong> {{ $order->reference_no }}</p>
-                                <p><strong>Status:</strong> <span class="badge bg-{{ $order->status === 'Pending' ? 'warning' : 'success' }}">{{ $order->status }}</span></p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 text-center">
-                        <div class="mx-auto" style="width: 150px; height: 150px; overflow: hidden; border:1px solid #dee2e6; border-radius: .25rem;">
-                            <img src="{{ $order->user->photo ? asset('storage/' . $order->user->photo) : asset('img/no-img.png') }}"
-                                 alt="Customer Photo"
-                                 class="img-fluid"
-                                 style="width: 150px; height: 150px; object-fit: cover;">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Order Details -->
-            <div class="mb-4">
-                <h5 class="mb-3">Order Details</h5>
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Service:</strong> {{ $order->service }}</p>
-                        <p><strong>Laundry Style:</strong> {{ $order->laundry_style }}</p>
-                        <p><strong>Fabric Type:</strong> {{ $order->fabric_type }}</p>
-                        <p><strong>Weight:</strong> {{ $order->weight }} kg</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><strong>Pickup Date:</strong> {{ \Carbon\Carbon::parse($order->date)->format('M d, Y') }}</p>
-                        <p><strong>Pickup Time:</strong> {{ \Carbon\Carbon::createFromFormat('H:i', $order->time)->format('h:i A') }}</p>
-                        <p><strong>Base Price:</strong> ₱{{ number_format($order->total_price, 2) }}</p>
-                        @if($order->additional_charges > 0)
-                            <p><strong>Additional Charges:</strong> ₱{{ number_format($order->additional_charges, 2) }}</p>
-                        @endif
-                        <p><strong>Total Amount:</strong> ₱{{ number_format($order->total_amount, 2) }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Additional Services -->
-            @if(!empty($order->additional_services))
-            <div class="mb-4">
-                <h5 class="mb-3">Additional Services</h5>
-                <ul class="list-unstyled">
-                    @foreach($order->additional_services as $service)
-                        <li>{{ $service }}</li>
-                    @endforeach
-                </ul>
-            </div>
+    <div>
+        <section class="surface mb-4"><h2 class="mb-4">Price & payment</h2>@include('components.order-price', ['order' => $order])
+            @if($order->payment_status !== 'paid' && $order->status !== 'Refunded')
+            <form method="POST" action="{{ route('staff.orders.pay', $order->id) }}" class="mt-4" data-payment-record data-single-submit>
+                @csrf
+                <p class="form-text">Record payment only after receiving it. This does not change laundry progress.</p>
+                <label class="form-label" for="payment_method">Payment method</label><select class="form-select mb-3" id="payment_method" name="payment_method" required><option value="">Choose method</option>@foreach(['Cash' => 'Cash', 'GCash' => 'GCash', 'Bank' => 'Bank transfer'] as $value => $label)<option value="{{ $value }}" @selected(old('payment_method') === $value)>{{ $label }}</option>@endforeach</select>
+                <label class="form-label" for="payment_reference">Reference <span class="text-muted fw-normal">(required for GCash / bank)</span></label><input class="form-control mb-3" id="payment_reference" name="payment_reference" maxlength="100" value="{{ old('payment_reference') }}">
+                <button class="btn btn-primary w-100" type="submit">Record payment received</button>
+            </form>
             @endif
-
-            <!-- Special Instructions -->
-            @if($order->special_instructions)
-            <div class="mb-4">
-                <h5 class="mb-3">Special Instructions</h5>
-                <p>{{ $order->special_instructions }}</p>
-            </div>
-            @endif
-
-            <!-- Payment Information -->
-            <div class="mb-4">
-                <h5 class="mb-3">Payment Information</h5>
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Payment Status:</strong> 
-                            <span class="badge bg-{{ $order->payment_status === 'paid' ? 'success' : 'warning' }}">
-                                {{ ucfirst($order->payment_status) }}
-                            </span>
-                        </p>
-                        @if($order->payment_method)
-                            <p><strong>Payment Method:</strong> {{ $order->payment_method }}</p>
-                        @endif
-                        @if($order->payment_reference)
-                            <p><strong>Payment Reference:</strong> {{ $order->payment_reference }}</p>
-                        @endif
-                        @if($order->paid_at)
-                            <p><strong>Paid At:</strong> {{ \Carbon\Carbon::parse($order->paid_at)->format('M d, Y h:i A') }}</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="text-end mt-4">
-                <a href="{{ route('staff.orders.index') }}" class="btn btn-secondary me-2">Back to Orders</a>
-                <a href="{{ route('receipt.show', $order->id) }}" class="btn btn-primary" target="_blank">
-                    <i class="fas fa-print me-1"></i> Print Receipt
-                </a>
-            </div>
-        </div>
+            @if($order->payment_reference)<p class="form-text mt-3">Payment reference: {{ $order->payment_reference }}</p>@endif
+            <a class="btn btn-light w-100 mt-3" href="{{ route('receipt.show', $order->id) }}" target="_blank" rel="noopener"><i class="bi bi-receipt me-2" aria-hidden="true"></i>View / print receipt</a>
+        </section>
+        <div class="notice"><div class="notice-title">Progress and payment are separate.</div><p>“Completed” means the laundry was delivered. “Paid” means the money was received. Always check both.</p></div>
     </div>
 </div>
-
-<style>
-    .wrapper {
-        width: 1050px;
-        margin: 0 auto;
-        box-sizing: border-box;
-    }
-    .card {
-        border: none;
-        border-radius: 0.5rem;
-    }
-    .badge {
-        font-size: 0.875rem;
-        padding: 0.5em 1em;
-        border-radius: 1rem;
-        text-transform: capitalize;
-    }
-    .btn {
-        padding: 0.5rem 1rem;
-        font-weight: 500;
-    }
-    .btn i {
-        margin-right: 0.5rem;
-    }
-</style>
-@endsection 
+@endsection

@@ -187,25 +187,24 @@ class CustomerController extends Controller
         return response()->json($orders);
     }
 
-    public function orderHistory()
+    public function orderHistory(Request $request)
     {
-        $user = auth()->user();
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Please log in to view your order history.');
+        $view = $request->query('view', 'active');
+        abort_unless(in_array($view, ['active', 'closed', 'all'], true), 404);
+        $query = Order::where('user_id', auth()->id());
+        $counts = [
+            'active' => (clone $query)->whereNotIn('status', ['Completed', 'Refunded'])->count(),
+            'closed' => (clone $query)->whereIn('status', ['Completed', 'Refunded'])->count(),
+            'all' => (clone $query)->count(),
+        ];
+        if ($view === 'active') {
+            $query->whereNotIn('status', ['Completed', 'Refunded']);
+        } elseif ($view === 'closed') {
+            $query->whereIn('status', ['Completed', 'Refunded']);
         }
-        
-        $orders = \App\Models\Order::where('user_id', $user->id)
-            ->where(function($query) {
-                $query->where('status', '!=', 'Completed')
-                    ->orWhere(function($q) {
-                        $q->where('status', 'Completed')
-                          ->where('updated_at', '>=', now()->subDay());
-                    });
-            })
-            ->orderByDesc('created_at')
-            ->get();
-            
-        return view('customer.orders.history', compact('orders'));
+        $orders = $query->latest()->paginate(10)->withQueryString();
+
+        return view('customer.orders.history', compact('orders', 'counts', 'view'));
     }
 
     public function adminShow($id)

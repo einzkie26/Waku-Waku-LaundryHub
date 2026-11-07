@@ -152,60 +152,14 @@ class OrderController extends Controller
 
     public function orderTracking($reference)
     {
-        $order = \App\Models\Order::where('reference_no', $reference)->first();
-
-        if (!$order) {
-            return redirect()->route('landing')->with('error', 'Order not found!');
+        $query = Order::with(['user', 'statusHistories'])->where('reference_no', $reference);
+        if (auth()->user()->role !== 'admin') {
+            $query->where('user_id', auth()->id());
         }
-
-        $statusFlows = [
-            'Wash & Fold' => [
-                'Pending' => 'Order received and waiting to be picked up',
-                'Picked Up' => 'Items have been collected',
-                'Washing' => 'Your items are being washed',
-                'Drying' => 'Your items are being dried',
-                'Ready' => 'Items are ready for delivery',
-                'Completed' => 'Order has been completed'
-            ],
-            'Dry Cleaning' => [
-                'Pending' => 'Order received and waiting to be picked up',
-                'Picked Up' => 'Items have been collected',
-                'Processing' => 'Your items are being dry cleaned',
-                'Ready' => 'Items are ready for delivery',
-                'Completed' => 'Order has been completed'
-            ],
-            'Express Service' => [
-                'Pending' => 'Order received and waiting to be picked up',
-                'Picked Up' => 'Items have been collected',
-                'Processing' => 'Your items are being processed',
-                'Ready' => 'Items are ready for delivery',
-                'Completed' => 'Order has been completed'
-            ],
-            'Ironing' => [
-                'Pending' => 'Order received and waiting to be picked up',
-                'Picked Up' => 'Items have been collected',
-                'Processing' => 'Your items are being ironed',
-                'Ready' => 'Items are ready for delivery',
-                'Completed' => 'Order has been completed'
-            ]
-        ];
-
-        $statusSteps = array_keys($statusFlows[$order->service] ?? $statusFlows['Wash & Fold']);
-        $statusDescriptions = $statusFlows[$order->service] ?? $statusFlows['Wash & Fold'];
-        $currentStatus = $order->status;
-        $currentStepIndex = array_search($currentStatus, $statusSteps);
-        if ($currentStepIndex === false) $currentStepIndex = 0;
-
-        return view('order-tracking', compact('order', 'statusSteps', 'statusDescriptions', 'currentStepIndex'));
+        $order = $query->firstOrFail();
+        return view('order-tracking', compact('order'));
     }
 
-    /**
-     * Update the status of an order
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $orderId
-     * @return \Illuminate\Http\Response
-     */
     public function updateStatus(Request $request, $id)
     {
         $order = Order::findOrFail($id);
@@ -340,13 +294,16 @@ class OrderController extends Controller
 
     public function showReceipt($orderId)
     {
-        $order = \App\Models\Order::with(['user', 'statusHistories'])->findOrFail($orderId);
+        $staff = session('staff_id') ? \App\Models\Employee::whereKey(session('staff_id'))->whereRaw('LOWER(status) = ?', ['active'])->exists() : false;
+        abort_unless(auth()->check() || $staff, 403);
+        $query = Order::with(['user', 'statusHistories'])->whereKey($orderId);
+        if (!$staff && auth()->user()->role !== 'admin') {
+            $query->where('user_id', auth()->id());
+        }
+        $order = $query->firstOrFail();
         return view('receipt', compact('order'));
     }
 
-    /**
-     * Display the specified order details for admin.
-     */
     public function show($id)
     {
         $order = Order::with('user')->findOrFail($id);
