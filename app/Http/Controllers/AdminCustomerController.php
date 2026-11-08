@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\AdminReportService;
+use App\Support\AdminModal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -51,7 +52,7 @@ class AdminCustomerController extends Controller
         return view('admin.customers.edit', compact('customer'));
     }
 
-    private function details(Request $request, ?User $customer = null): array
+    private function details(Request $request, ?User $customer = null, string $errorBag = 'default'): array
     {
         $rules = [
             'name' => ['required', 'string', 'max:255'],
@@ -60,12 +61,18 @@ class AdminCustomerController extends Controller
             'address' => ['required', 'string', 'max:255'],
         ];
         if (!$customer) $rules['password'] = ['required', 'string', 'min:8', 'confirmed'];
-        return $request->validate($rules);
+        return $request->validateWithBag($errorBag, $rules);
     }
 
     public function store(Request $request)
     {
-        $customer = User::create($this->details($request) + ['role' => 'customer']);
+        $modal = $request->input('_admin_modal') === 'customer-create';
+        $customer = User::create($this->details($request, null, $modal ? 'customerForm' : 'default') + ['role' => 'customer']);
+        if ($modal) {
+            return redirect(AdminModal::returnUrl($request, 'admin.customers.index'))
+                ->with('success', $customer->name.' was added.')
+                ->with('new_customer_id', $customer->id);
+        }
         return redirect()->route('admin.customers.show', $customer->id)->with('success', 'Customer added. You can now create their first order.');
     }
 

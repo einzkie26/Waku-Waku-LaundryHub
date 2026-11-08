@@ -120,16 +120,21 @@
             }
         };
 
-        toggle.addEventListener('click', event => {
+        document.addEventListener('click', event => {
             const pointerClick = event.detail !== 0 || ['touch', 'pen'].includes(event.pointerType);
             if (pointerClick && performance.now() - Math.max(lastDragAt, lastTouchTapAt) < 1000) {
                 event.preventDefault();
-                return;
+                event.stopImmediatePropagation();
             }
-            setOpen(!open);
-        });
+        }, true);
+        toggle.addEventListener('click', () => setOpen(!open));
         toggle.addEventListener('pointerdown', event => {
             if (event.button !== 0 || !event.isPrimary) return;
+            if (['touch', 'pen'].includes(event.pointerType)) {
+                // The logo moves when expanded; keep native touch focus on the control.
+                event.preventDefault();
+                toggle.focus({ preventScroll: true });
+            }
             lastDragAt = -Infinity;
             lastTouchTapAt = -Infinity;
             const rect = toggle.getBoundingClientRect();
@@ -186,6 +191,8 @@
             }
         });
         document.addEventListener('pointerdown', event => {
+            lastDragAt = -Infinity;
+            lastTouchTapAt = -Infinity;
             if (open && !menu.contains(event.target)) setOpen(false);
         });
         document.addEventListener('focusin', event => {
@@ -213,21 +220,36 @@
         });
     });
 
-    const employeeModal = document.getElementById('employee-create-modal');
-    if (employeeModal && window.bootstrap) {
-        employeeModal.addEventListener('shown.bs.modal', () => {
-            const error = employeeModal.querySelector('#employee-form-errors');
-            (error || employeeModal.querySelector('[name="name"]'))?.focus();
+    if (window.bootstrap) {
+        const modals = [...document.querySelectorAll('[data-admin-modal]')];
+        modals.forEach(modal => {
+            let returnFocus;
+            modal.addEventListener('show.bs.modal', event => {
+                const trigger = event.relatedTarget instanceof HTMLElement
+                    ? event.relatedTarget
+                    : document.querySelector('[data-bs-target="#' + modal.id + '"]');
+                returnFocus = trigger?.closest('#admin-navigation') ? toggle
+                    : trigger?.closest('.dropdown-menu')
+                        ? trigger.closest('.dropdown')?.querySelector('[data-bs-toggle="dropdown"]')
+                        : trigger;
+            });
+            modal.addEventListener('shown.bs.modal', () => {
+                const target = modal.querySelector('[data-modal-errors]')
+                    || modal.querySelector('[data-modal-initial-focus], input:not([type="hidden"]), select, textarea');
+                target?.focus({ preventScroll: true });
+            });
+            modal.addEventListener('hidden.bs.modal', () => {
+                const url = new URL(window.location.href);
+                const parameter = modal.dataset.clearQuery;
+                if (parameter && url.searchParams.has(parameter)) {
+                    url.searchParams.delete(parameter);
+                    history.replaceState(history.state, '', url.pathname + url.search + url.hash);
+                }
+                returnFocus?.focus({ preventScroll: true });
+            });
         });
-        employeeModal.addEventListener('hidden.bs.modal', () => {
-            const url = new URL(window.location.href);
-            if (url.searchParams.has('add')) {
-                url.searchParams.delete('add');
-                history.replaceState(history.state, '', url.pathname + url.search + url.hash);
-            }
-        });
-        if (employeeModal.dataset.openOnLoad === 'true') {
-            bootstrap.Modal.getOrCreateInstance(employeeModal).show();
-        }
+        const initialModal = modals.find(modal => modal.querySelector('[data-modal-errors]'))
+            || modals.find(modal => modal.dataset.openOnLoad === 'true');
+        if (initialModal) bootstrap.Modal.getOrCreateInstance(initialModal).show();
     }
 })();

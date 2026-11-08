@@ -25,6 +25,7 @@
             <footer class="admin-footer"><span>Waku-Waku Laundryhub</span><span>A little more clarity. Every day.</span></footer>
         </div>
     </main>
+    @include('admin.settings.modal')
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('js/laundryhub.js') }}" defer></script>
     <script src="{{ asset('js/admin-workspace.js') }}?v={{ filemtime(public_path('js/admin-workspace.js')) }}" defer></script>

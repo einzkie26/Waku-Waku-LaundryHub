@@ -1,7 +1,8 @@
 @extends('layouts.admin-app')
 @section('title', 'Orders')
 @section('content')
-<div class="admin-heading"><div><h1>Orders</h1></div><a class="btn btn-primary" href="{{ route('orders.create') }}"><i class="bi bi-plus-lg me-2" aria-hidden="true"></i>New order</a></div>
+<div class="admin-heading"><div><h1>Orders</h1></div><button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#order-create-modal"><i class="bi bi-plus-lg me-2" aria-hidden="true"></i>New order</button></div>
+@if(session('new_order_id'))<p class="mb-4"><a class="btn btn-light btn-sm" href="{{ route('orders.show', session('new_order_id')) }}">View the new order <i class="bi bi-arrow-up-right ms-1" aria-hidden="true"></i></a></p>@endif
 @include('admin.components.metrics', ['items' => [
     ['label' => 'All orders', 'value' => $metrics['all'], 'note' => 'Across every service', 'icon' => 'collection', 'href' => route('orders.index')],
     ['label' => 'In progress', 'value' => $metrics['active'], 'note' => 'Still in our care', 'icon' => 'basket', 'href' => route('orders.index', ['status' => 'active'])],
@@ -20,4 +21,5 @@
     @include('admin.components.order-table')
     @if($orders->hasPages())<div class="admin-pagination">{{ $orders->links('pagination::bootstrap-5') }}</div>@endif
 </section>
+@include('admin.orders.create-modal')
 @endsection

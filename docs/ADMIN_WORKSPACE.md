@@ -9,17 +9,19 @@ All active admin pages use `layouts.admin-app`, a floating circular navigation m
 | Area | Features |
 | --- | --- |
 | Overview | Today's collected payments, orders in progress, ready orders, customers, a 7/30-day payment chart, service mix, and recent orders |
-| Orders | Search and progress/payment/service filters, customer selection, live price review, order details, next-step actions, pickup rescheduling, payment recording, receipts, and refund recording |
-| Customers | Search, profiles, permanent order history, contact editing, account creation, and new orders with the customer selected |
+| Orders | Search and progress/payment/service filters, modal order creation, customer selection, live price review, order details, next-step actions, pickup rescheduling, payment recording, receipts, and refund recording |
+| Customers | Search, profiles, permanent order history, contact editing, modal account creation, and new orders with the customer selected |
 | Employees | Search, access filters, modal staff creation, profiles, recent attendance, and account activation/deactivation |
 | Revenue | Paid transactions, daily totals, service and payment-method breakdowns, customer totals, and PDF export |
 | Services | Order volume, weight, booked value, and order share for each service |
 | Attendance | Today's check-ins and recorded attendance for a selected month |
-| Account settings | Admin profile, contact details, and password changes requiring the current password |
+| Account settings | Shared modal for the admin profile, contact details, and password changes requiring the current password |
 
 Tables become cards on smaller screens so actions remain visible. Click the floating logo to expand or collapse the circular navigation. Drag the logo with a mouse or touch to snap to one of eight docks: the four corners and the middle of each edge. The dock is remembered in browser storage, and the expanded circle stays inside the visible viewport. Focus the logo and use the arrow keys to change docks; Tab enters the selections, arrow keys navigate them, and Escape closes the menu. The menu also closes when focus or a pointer moves outside it.
 
 On the Employees page, **Add employee** opens a scrollable modal. Validation errors reopen the modal with non-secret fields preserved; successful creation returns to the team list with a profile link. The previous `/admin/employees/add` address redirects to the same modal using `?add=1`.
+
+**Settings** in the circular navigation and **Account settings** in the account menu open the same modal on the current page. **Add customer** on Customers and **New order** on Orders also open scrollable modals. Saving returns to the current page with its filters preserved; customer and order creation include a link to the new record. Validation reopens the relevant modal, keeps its non-secret input separate from the other forms, and focuses the error summary. Cancel, close, and Escape return focus to the triggering control. Direct customer and order creation pages remain available for other entry points; the direct Settings address opens its modal.
 
 ## Data rules
 

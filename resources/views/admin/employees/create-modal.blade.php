@@ -1,4 +1,4 @@
-<div class="modal fade employee-create-modal" id="employee-create-modal" tabindex="-1" aria-labelledby="employee-create-title" aria-hidden="true" data-open-on-load="{{ request()->boolean('add') || $errors->getBag('employeeForm')->any() ? 'true' : 'false' }}">
+<div class="modal fade employee-create-modal admin-form-modal" id="employee-create-modal" tabindex="-1" aria-labelledby="employee-create-title" aria-hidden="true" data-admin-modal data-clear-query="add" data-open-on-load="{{ request()->boolean('add') || $errors->getBag('employeeForm')->any() ? 'true' : 'false' }}">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <form class="modal-content" id="employee-create-form" method="POST" action="{{ route('employees.store') }}" data-single-submit>
             @csrf
@@ -8,7 +8,7 @@
             </div>
             <div class="modal-body">
                 @if($errors->getBag('employeeForm')->any())
-                    <div class="alert alert-danger" role="alert" id="employee-form-errors" tabindex="-1">
+                    <div class="alert alert-danger" role="alert" id="employee-form-errors" tabindex="-1" data-modal-errors>
                         <strong>Please check the employee details.</strong>
                         <ul class="mb-0 mt-2">@foreach($errors->getBag('employeeForm')->all() as $message)<li>{{ $message }}</li>@endforeach</ul>
                     </div>

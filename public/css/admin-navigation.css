@@ -183,15 +183,28 @@
     border-bottom: 1px solid var(--admin-border);
     background: #fff;
 }
-.employee-create-modal .modal-header,
-.employee-create-modal .modal-footer {
+.admin-form-modal .modal-header,
+.admin-form-modal .modal-footer {
     flex-shrink: 0;
 }
-.employee-create-modal .modal-body {
+.admin-form-modal .modal-body {
     overscroll-behavior: contain;
 }
 .employee-create-modal .admin-section-kicker {
     color: #60735b;
+}
+.admin-order-modal .booking-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(270px, 1fr);
+    gap: 18px;
+    margin-bottom: 0;
+}
+.admin-order-modal .summary-card {
+    position: static;
+}
+@media(max-width: 991px) {
+    .admin-order-modal .booking-grid {
+        grid-template-columns: 1fr;
+    }
 }
 @media(max-width: 767px) {
     .admin-radial-shell .admin-topbar {

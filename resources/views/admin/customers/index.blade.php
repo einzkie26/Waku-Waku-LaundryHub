@@ -1,7 +1,8 @@
 @extends('layouts.admin-app')
 @section('title', 'Customers')
 @section('content')
-<div class="admin-heading"><div><h1>Customers</h1></div><a class="btn btn-primary" href="{{ route('admin.customers.create') }}"><i class="bi bi-person-plus me-2" aria-hidden="true"></i>Add customer</a></div>
+<div class="admin-heading"><div><h1>Customers</h1></div><button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#customer-create-modal"><i class="bi bi-person-plus me-2" aria-hidden="true"></i>Add customer</button></div>
+@if(session('new_customer_id'))<p class="mb-4"><a class="btn btn-light btn-sm" href="{{ route('admin.customers.show', session('new_customer_id')) }}">View the new customer <i class="bi bi-arrow-up-right ms-1" aria-hidden="true"></i></a></p>@endif
 @include('admin.components.metrics', ['items' => [
     ['label' => 'All customers', 'value' => $metrics['total'], 'note' => 'Customer accounts', 'icon' => 'people', 'featured' => true],
     ['label' => 'Have placed orders', 'value' => $metrics['withOrders'], 'note' => 'At least one order', 'icon' => 'basket'],
@@ -11,6 +12,7 @@
 <div class="admin-table-summary"><span>{{ $customers->total() }} {{ \Illuminate\Support\Str::plural('customer', $customers->total()) }} in this view</span><span>Sorted by name</span></div>
 <section class="admin-panel"><div class="table-responsive"><table class="table admin-table" data-responsive><caption class="visually-hidden">Customer contacts, orders and profile actions</caption><thead><tr><th scope="col">Customer</th><th scope="col">Phone</th><th scope="col">Pickup address</th><th scope="col">Orders</th><th scope="col">Last order</th><th scope="col" class="text-end">Actions</th></tr></thead><tbody>
     @forelse($customers as $customer)<tr><td><div class="admin-person"><span class="admin-person-avatar">{{ mb_strtoupper(mb_substr($customer->name, 0, 1)) }}</span><div><strong>{{ $customer->name }}</strong><small>{{ $customer->username }}</small></div></div></td><td data-label="Phone">{{ $customer->phone ?: 'Not provided' }}</td><td data-label="Pickup address">{{ \Illuminate\Support\Str::limit($customer->address, 55) ?: 'Not provided' }}</td><td data-label="Orders">{{ $customer->orders_count }}</td><td data-label="Last order">{{ $customer->orders_max_created_at ? \Carbon\Carbon::parse($customer->orders_max_created_at)->format('M j, Y') : 'No orders yet' }}</td><td><div class="admin-row-actions"><a class="btn btn-light btn-sm" href="{{ route('admin.customers.show', $customer->id) }}">Profile</a><a class="btn btn-primary btn-sm" href="{{ route('orders.create', ['customer' => $customer->id]) }}">New order</a></div></td></tr>
-    @empty<tr><td colspan="6"><div class="admin-empty"><i class="bi bi-people" aria-hidden="true"></i><h2>No customers found.</h2><p>Try a different search or add your first customer.</p><a class="btn btn-primary" href="{{ route('admin.customers.create') }}">Add customer</a></div></td></tr>@endforelse
+    @empty<tr><td colspan="6"><div class="admin-empty"><i class="bi bi-people" aria-hidden="true"></i><h2>No customers found.</h2><p>Try a different search or add your first customer.</p><button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#customer-create-modal">Add customer</button></div></td></tr>@endforelse
 </tbody></table></div>@if($customers->hasPages())<div class="admin-pagination">{{ $customers->links('pagination::bootstrap-5') }}</div>@endif</section>
+@include('admin.customers.create-modal')
 @endsection

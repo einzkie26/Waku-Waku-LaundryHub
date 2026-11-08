@@ -6,13 +6,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\UserLog;
+use App\Support\AdminModal;
 
 class ProfileController extends Controller
 {
     public function updateAdmin(Request $request)
     {
         $user = $request->user();
-        $data = $request->validate([
+        $data = $request->validateWithBag('settingsForm', [
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', \Illuminate\Validation\Rule::unique('users', 'username')->ignore($user->id)],
             'phone' => ['nullable', 'string', 'max:20'],
@@ -26,7 +27,8 @@ class ProfileController extends Controller
         ]);
         if (!empty($data['password'])) $user->password = Hash::make($data['password']);
         $user->save();
-        return redirect()->route('settings.profile')->with('success', 'Your admin account has been updated.');
+        return redirect(AdminModal::returnUrl($request, 'admin.dashboard'))
+            ->with('success', 'Your admin account has been updated.');
     }
 
     public function update(Request $request)

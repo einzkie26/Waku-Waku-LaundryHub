@@ -9,6 +9,7 @@ use App\Models\UserLog;
 use App\Services\AdminReportService;
 use App\Services\LaundryOrderService;
 use App\Support\LaundryWorkflow;
+use App\Support\AdminModal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +45,8 @@ class OrderController extends Controller
             'ready' => Order::where('status', 'Ready')->count(),
             'unpaid' => (float) Order::where('payment_status', 'pending')->where('status', '!=', 'Refunded')->sum(DB::raw(AdminReportService::AMOUNT)),
         ];
-        return view('admin.orders.index', compact('orders', 'metrics', 'status'));
+        $bookingCustomers = User::where('role', 'customer')->orderBy('name')->get();
+        return view('admin.orders.index', compact('orders', 'metrics', 'status', 'bookingCustomers'));
     }
 
     public function staffIndex()
@@ -60,8 +62,19 @@ class OrderController extends Controller
 
     public function store(Request $request, LaundryOrderService $orders)
     {
-        $data = $request->validate(LaundryWorkflow::rules(true));
-        $order = $orders->create($data, (int) $data['user_id'], 'admin', $request->user()->id);
+        $modal = $request->input('_admin_modal') === 'order-create';
+        $errorBag = $modal ? 'orderForm' : 'default';
+        $data = $request->validateWithBag($errorBag, LaundryWorkflow::rules(true));
+        try {
+            $order = $orders->create($data, (int) $data['user_id'], 'admin', $request->user()->id);
+        } catch (ValidationException $exception) {
+            throw $exception->errorBag($errorBag);
+        }
+        if ($modal) {
+            return redirect(AdminModal::returnUrl($request, 'orders.index'))
+                ->with('success', $order->reference_no.' was created.')
+                ->with('new_order_id', $order->id);
+        }
         return redirect()->route('orders.show', $order->id)->with('success', 'Order created. Confirm pickup when the laundry has been collected.');
     }
 

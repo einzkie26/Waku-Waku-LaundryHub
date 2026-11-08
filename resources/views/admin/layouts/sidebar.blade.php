@@ -18,7 +18,7 @@
     <span class="admin-radial-caption" aria-hidden="true">Menu <i class="bi bi-plus" aria-hidden="true"></i></span>
     <nav class="admin-radial-selections" id="admin-radial-selections" aria-label="Admin navigation" hidden inert>
         @foreach($navigationLinks as [$route, $label, $icon, $pattern])
-            <a class="admin-radial-choice {{ request()->routeIs($pattern) ? 'active' : '' }}" href="{{ route($route) }}" data-nav-choice tabindex="-1" @if(request()->routeIs($pattern)) aria-current="page" @endif>
+            <a class="admin-radial-choice {{ request()->routeIs($pattern) ? 'active' : '' }}" href="{{ route($route) }}" data-nav-choice tabindex="-1" @if($route === 'settings.profile') data-bs-toggle="modal" data-bs-target="#admin-settings-modal" @endif @if(request()->routeIs($pattern)) aria-current="page" @endif>
                 <i class="bi bi-{{ $icon }}" aria-hidden="true"></i><span>{{ $label }}</span>
             </a>
         @endforeach

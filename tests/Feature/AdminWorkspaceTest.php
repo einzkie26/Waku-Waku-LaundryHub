@@ -70,6 +70,16 @@ class AdminWorkspaceTest extends TestCase
         return app(LaundryOrderService::class)->create($this->details($attributes), $customer->id, 'customer', $customer->id);
     }
 
+    private function element(string $html, string $id): \DOMElement
+    {
+        $document = new \DOMDocument();
+        @$document->loadHTML($html);
+        $element = (new \DOMXPath($document))->query('//*[@id="'.$id.'"]')->item(0);
+        $this->assertInstanceOf(\DOMElement::class, $element, 'Missing element: '.$id);
+
+        return $element;
+    }
+
     public function test_admin_pages_require_an_admin_account(): void
     {
         $this->get('/admin/dashboard')->assertRedirect(route('login.form'));
@@ -292,6 +302,156 @@ class AdminWorkspaceTest extends TestCase
         $this->get('/admin/employees')->assertOk()->assertSee('data-open-on-load="false"', false);
     }
 
+    public function test_modal_forms_render_with_unique_ids_and_blank_customer_details(): void
+    {
+        $this->admin();
+        $this->user(['name' => 'Existing Customer']);
+        foreach (['/admin/orders', '/admin/customers', '/admin/employees'] as $path) {
+            $html = $this->get($path)->assertOk()->getContent();
+            preg_match_all('/\bid="([^"]+)"/', $html, $matches);
+            $this->assertSame(count($matches[1]), count(array_unique($matches[1])), 'Duplicate IDs on '.$path);
+            $this->assertSame('false', $this->element($html, 'admin-settings-modal')->getAttribute('data-open-on-load'));
+        }
+        $html = $this->get('/admin/customers')->getContent();
+        $this->assertSame('', $this->element($html, 'customer-create-name')->getAttribute('value'));
+        $this->assertSame('Mika Santos', $this->element($html, 'settings-name')->getAttribute('value'));
+    }
+
+    public function test_customer_modal_creation_returns_to_the_filtered_customer_list(): void
+    {
+        $this->admin();
+        $target = '/admin/customers?q=New&page=2';
+        $this->from($target)->post('/admin/customers', [
+            '_admin_modal' => 'customer-create', '_return_to' => $target,
+            'name' => 'New Customer', 'username' => 'new-customer', 'phone' => '09111222333',
+            'address' => '23 Fresh Street', 'password' => 'customer-pass',
+            'password_confirmation' => 'customer-pass', 'role' => 'admin',
+        ])->assertRedirect($target)->assertSessionHasNoErrors()->assertSessionHas('new_customer_id');
+        $customer = User::where('username', 'new-customer')->sole();
+        $this->assertSame('customer', $customer->role);
+        $this->assertTrue(Hash::check('customer-pass', $customer->password));
+        $html = $this->get($target)->assertOk()->assertSee('View the new customer')->getContent();
+        $this->assertSame('false', $this->element($html, 'customer-create-modal')->getAttribute('data-open-on-load'));
+    }
+
+    public function test_customer_modal_errors_preserve_customer_input_and_leave_settings_alone(): void
+    {
+        $this->admin();
+        $this->user(['username' => 'taken-name']);
+        $this->from('/admin/customers')->post('/admin/customers', [
+            '_admin_modal' => 'customer-create', '_return_to' => '/admin/customers',
+            'name' => 'Draft Customer', 'username' => 'taken-name', 'phone' => '09111222333',
+            'address' => '23 Fresh Street', 'password' => 'customer-pass', 'password_confirmation' => 'mismatch',
+        ])->assertRedirect('/admin/customers')->assertSessionHasErrors(['username', 'password'], null, 'customerForm');
+        $html = $this->get('/admin/customers')->assertOk()->getContent();
+        $this->assertSame('true', $this->element($html, 'customer-create-modal')->getAttribute('data-open-on-load'));
+        $this->assertSame('Draft Customer', $this->element($html, 'customer-create-name')->getAttribute('value'));
+        $this->assertSame('', $this->element($html, 'customer-create-password')->getAttribute('value'));
+        $this->assertSame('Mika Santos', $this->element($html, 'settings-name')->getAttribute('value'));
+        $this->assertSame('false', $this->element($html, 'admin-settings-modal')->getAttribute('data-open-on-load'));
+        $this->assertDatabaseMissing('users', ['name' => 'Draft Customer']);
+    }
+
+    public function test_order_modal_creates_a_paid_order_and_returns_to_the_filtered_order_list(): void
+    {
+        $this->admin();
+        $customer = $this->user();
+        $target = '/admin/orders?status=active&payment=paid';
+        $data = $this->details([
+            'user_id' => $customer->id, 'payment_status' => 'paid',
+            'payment_method' => 'GCash', 'payment_reference' => 'PAY-MODAL-123',
+        ]);
+        $this->from($target)->post('/admin/orders', $data + [
+            '_admin_modal' => 'order-create', '_return_to' => $target,
+        ])->assertRedirect($target)->assertSessionHasNoErrors()->assertSessionHas('new_order_id');
+        $order = Order::sole();
+        $this->assertSame(155.0, (float) $order->total_amount);
+        $this->assertSame('paid', $order->payment_status);
+        $this->assertSame('PAY-MODAL-123', $order->payment_reference);
+        $this->assertSame('Pending', $order->status);
+        $this->assertSame('admin', $order->statusHistories()->sole()->changed_by_type);
+        $html = $this->get($target)->assertOk()->assertSee('View the new order')->getContent();
+        $this->assertSame('false', $this->element($html, 'order-create-modal')->getAttribute('data-open-on-load'));
+    }
+
+    public function test_order_modal_payment_errors_preserve_the_booking_and_reopen_the_modal(): void
+    {
+        $this->admin();
+        $customer = $this->user();
+        $this->from('/admin/orders')->post('/admin/orders', $this->details([
+            'user_id' => $customer->id, 'payment_status' => 'paid', 'payment_method' => 'GCash',
+        ]) + ['_admin_modal' => 'order-create'])->assertRedirect('/admin/orders')
+            ->assertSessionHasErrors('payment_reference', null, 'orderForm');
+        $html = $this->get('/admin/orders')->assertOk()->getContent();
+        $this->assertSame('true', $this->element($html, 'order-create-modal')->getAttribute('data-open-on-load'));
+        $this->assertSame('2.5', $this->element($html, 'weight')->getAttribute('value'));
+        $this->assertSame('2026-11-08', $this->element($html, 'date')->getAttribute('value'));
+        $this->assertSame('false', $this->element($html, 'admin-settings-modal')->getAttribute('data-open-on-load'));
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_order_modal_handles_service_validation_errors_in_the_same_form(): void
+    {
+        $this->admin();
+        $customer = $this->user();
+        $this->from('/admin/orders')->post('/admin/orders', $this->details([
+            'user_id' => $customer->id, 'date' => '2026-11-07', 'time' => '09:00',
+        ]) + ['_admin_modal' => 'order-create'])->assertRedirect('/admin/orders')
+            ->assertSessionHasErrors('time', null, 'orderForm');
+        $html = $this->get('/admin/orders')->assertOk()->getContent();
+        $this->assertSame('true', $this->element($html, 'order-create-modal')->getAttribute('data-open-on-load'));
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_settings_modal_save_returns_to_the_current_admin_page(): void
+    {
+        $admin = $this->admin();
+        $target = '/admin/orders?status=Ready&payment=pending';
+        $this->from($target)->put('/admin/settings/profile', [
+            'name' => 'Updated Admin', 'username' => $admin->username, '_return_to' => $target,
+        ])->assertRedirect($target)->assertSessionHasNoErrors();
+        $this->assertSame('Updated Admin', $admin->fresh()->name);
+        $html = $this->get($target)->assertOk()->getContent();
+        $this->assertSame('false', $this->element($html, 'admin-settings-modal')->getAttribute('data-open-on-load'));
+        $this->assertSame('Updated Admin', $this->element($html, 'settings-name')->getAttribute('value'));
+    }
+
+    public function test_settings_errors_reopen_settings_without_filling_the_employee_form(): void
+    {
+        $admin = $this->admin();
+        $this->from('/admin/employees')->put('/admin/settings/profile', [
+            'name' => 'Draft Admin', 'username' => $admin->username, '_return_to' => '/admin/employees',
+            'current_password' => 'wrong-password', 'password' => 'new-admin-pass', 'password_confirmation' => 'new-admin-pass',
+        ])->assertRedirect('/admin/employees')->assertSessionHasErrors('current_password', null, 'settingsForm');
+        $html = $this->get('/admin/employees')->assertOk()->getContent();
+        $this->assertSame('true', $this->element($html, 'admin-settings-modal')->getAttribute('data-open-on-load'));
+        $this->assertSame('Draft Admin', $this->element($html, 'settings-name')->getAttribute('value'));
+        $this->assertSame('', $this->element($html, 'settings-current-password')->getAttribute('value'));
+        $this->assertSame('', $this->element($html, 'settings-password')->getAttribute('value'));
+        $this->assertSame('', $this->element($html, 'employee-name')->getAttribute('value'));
+        $this->assertSame('false', $this->element($html, 'employee-create-modal')->getAttribute('data-open-on-load'));
+        $this->assertSame('Mika Santos', $admin->fresh()->name);
+    }
+
+    public function test_settings_modal_return_address_stays_inside_the_admin_workspace(): void
+    {
+        $admin = $this->admin();
+        foreach (['https://example.test', '//example.test', '/admin/../../outside', '/admin/%2E%2E/outside', '/admin/\\example.test'] as $target) {
+            $this->put('/admin/settings/profile', [
+                'name' => $admin->name, 'username' => $admin->username, '_return_to' => $target,
+            ])->assertRedirect(route('admin.dashboard'))->assertSessionHasNoErrors();
+        }
+    }
+
+    public function test_order_filter_errors_do_not_open_the_order_modal(): void
+    {
+        $this->admin();
+        $this->from('/admin/orders')->get('/admin/orders?status=unknown')
+            ->assertRedirect('/admin/orders')->assertSessionHasErrors('status');
+        $html = $this->get('/admin/orders')->assertOk()->getContent();
+        $this->assertSame('false', $this->element($html, 'order-create-modal')->getAttribute('data-open-on-load'));
+    }
+
     public function test_admin_settings_save_profile_and_require_the_current_password_for_a_change(): void
     {
         $admin = $this->admin();
@@ -299,7 +459,7 @@ class AdminWorkspaceTest extends TestCase
         $this->put('/admin/settings/profile', $data)->assertRedirect()->assertSessionHasNoErrors();
         $this->assertSame('Updated Admin', $admin->fresh()->name);
         $this->put('/admin/settings/profile', $data + ['password' => 'new-admin-pass', 'password_confirmation' => 'new-admin-pass'])
-            ->assertSessionHasErrors('current_password');
+            ->assertSessionHasErrors('current_password', null, 'settingsForm');
         $this->put('/admin/settings/profile', $data + ['current_password' => 'laundry-test', 'password' => 'new-admin-pass', 'password_confirmation' => 'new-admin-pass'])
             ->assertRedirect()->assertSessionHasNoErrors();
         $this->assertTrue(Hash::check('new-admin-pass', $admin->fresh()->password));
