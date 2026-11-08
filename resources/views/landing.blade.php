@@ -1,21 +1,57 @@
 @extends('layouts.app')
 
+@push('styles')
+    <link href="{{ asset('css/hero-laundry.css') }}?v={{ filemtime(public_path('css/hero-laundry.css')) }}" rel="stylesheet">
+@endpush
+
+@push('scripts')
+    <script src="{{ asset('js/hero-laundry.js') }}?v={{ filemtime(public_path('js/hero-laundry.js')) }}" defer></script>
+@endpush
+
 @section('content')
-<section class="hero-section">
+<section class="hero-section" data-laundry-hero>
     <div class="container hero-grid">
-        <div>
+        <div class="hero-copy">
             <div class="eyebrow">Fresh clothes. A lighter day.</div>
             <h1>A little less laundry.<br>A little <em>more life.</em></h1>
             <p class="hero-description">Leave the laundry to us. Book your pickup, follow its progress, and get back to the things you love.</p>
             <div class="hero-actions">
-                <a href="{{ route('booking.create') }}" class="btn btn-primary">Book a pickup <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i></a>
+                <a href="{{ route('booking.create') }}" class="btn btn-primary" data-hero-machine="wash">Book a pickup <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i></a>
                 <h4 class="hero-or">or</h4>
-                <a href="{{ auth()->check() ? route('customer.orders.history') : '#services' }}" class="btn btn-light">{{ auth()->check() ? 'Track my laundry' : 'Spin and wash your clothes' }}</a>
+                <a href="{{ auth()->check() ? route('customer.orders.history') : '#services' }}" class="btn btn-light" data-hero-machine="spin">{{ auth()->check() ? 'Track my laundry' : 'Spin and wash your clothes' }}</a>
             </div>
         </div>
-        <div class="hero-art" role="img" aria-label="A fresh green washing machine, ready to take laundry off your hands">
+        <div class="hero-art" role="img" aria-label="A Waku-Waku washing machine with clothes and water behind its glass door" data-washer data-machine-mode="idle">
             <div class="art-tag art-tag-top"><i class="bi bi-stars me-2" aria-hidden="true"></i>A fresh start for your clothes</div>
-            <div class="washer" aria-hidden="true"><div class="washer-top"><span></span><span></span><span></span><span></span></div><div class="washer-door"></div></div>
+            <div class="washer-motion" aria-hidden="true">
+                <div class="washer">
+                    <div class="washer-top">
+                        <div class="washer-drawer"></div>
+                        <div class="washer-dial"></div>
+                        <div class="washer-readout"><small data-washer-cycle>Ready</small><b data-washer-value>00:00</b></div>
+                        <div class="washer-light"></div>
+                    </div>
+                    <div class="washer-porthole">
+                        <div class="washer-door">
+                            <div class="washer-drum" data-washer-drum>
+                                <div class="washer-drum-texture"></div>
+                                <span class="washer-cloth washer-cloth-mint"></span>
+                                <span class="washer-cloth washer-cloth-cream"></span>
+                                <span class="washer-cloth washer-cloth-sage"></span>
+                            </div>
+                            <div class="washer-water">
+                                <svg class="washer-wave washer-wave-back" viewBox="0 0 480 160" preserveAspectRatio="none" focusable="false"><path d="M0 44 C40 20 80 20 120 44 S200 68 240 44 C280 20 320 20 360 44 S440 68 480 44 V160 H0 Z" /></svg>
+                                <svg class="washer-wave washer-wave-front" viewBox="0 0 480 160" preserveAspectRatio="none" focusable="false"><path d="M0 44 C40 20 80 20 120 44 S200 68 240 44 C280 20 320 20 360 44 S440 68 480 44 V160 H0 Z" /></svg>
+                            </div>
+                            <div class="washer-bubbles"><i></i><i></i><i></i><i></i></div>
+                            <div class="washer-glass"></div>
+                        </div>
+                        <div class="washer-handle"></div>
+                    </div>
+                    <div class="washer-base"><span class="washer-brand">WAKU-WAKU</span><span class="washer-vent"></span><span class="washer-filter"></span></div>
+                    <div class="washer-foot washer-foot-left"></div><div class="washer-foot washer-foot-right"></div>
+                </div>
+            </div>
             <div class="art-tag art-tag-bottom"><i class="bi bi-basket me-2" aria-hidden="true"></i>From your basket, back to you.</div>
             <div class="art-sparkle" aria-hidden="true">✳</div>
         </div>
