@@ -1,57 +1,13 @@
-@extends('admin.layouts.app')
-
+@extends('layouts.admin-app')
+@section('title', 'Employee profile')
 @section('content')
-<div class="container py-4">
-    <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <h4 class="mb-0">Employee Details</h4>
-        </div>
-        <div class="card-body bg-white">
-            <dl class="row">
-                <dt class="col-sm-3 text-muted">Name</dt>
-                <dd class="col-sm-9">{{ $employee->name }}</dd>
-
-                <dt class="col-sm-3 text-muted">Email</dt>
-                <dd class="col-sm-9">{{ $employee->email }}</dd>
-
-                <dt class="col-sm-3 text-muted">Position</dt>
-                <dd class="col-sm-9">{{ $employee->position }}</dd>
-
-                <dt class="col-sm-3 text-muted">Contact</dt>
-                <dd class="col-sm-9">{{ $employee->contact }}</dd>
-
-                <dt class="col-sm-3 text-muted">Hire Date</dt>
-                <dd class="col-sm-9">{{ $employee->hire_date }}</dd>
-
-                <dt class="col-sm-3 text-muted">Shift</dt>
-                <dd class="col-sm-9">{{ $employee->shift }}</dd>
-
-                <dt class="col-sm-3 text-muted">Status</dt>
-                <dd class="col-sm-9">{{ $employee->status }}</dd>
-            </dl>
-            <a href="{{ route('employees.list') }}" class="btn btn-secondary mt-3"><i class="fas fa-arrow-left me-1"></i> Back to Staff List</a>
-        </div>
+@php($active = strtolower($employee->status) === 'active')
+<div class="admin-heading"><div><a class="admin-back-link" href="{{ route('employees.list') }}"><i class="bi bi-arrow-left" aria-hidden="true"></i>Employees</a><h1>{{ $employee->name }}</h1></div><span class="status-pill {{ $active ? 'status-ready' : 'status-completed' }}">{{ $active ? 'Active account' : 'Inactive account' }}</span></div>
+<div class="admin-columns">
+    <div>
+        <section class="admin-panel"><div class="admin-panel-header"><h2>Team member details</h2></div><div class="admin-panel-body"><div class="admin-profile-intro"><span class="admin-person-avatar admin-detail-avatar">{{ mb_strtoupper(mb_substr($employee->name, 0, 1)) }}</span><div><h2>{{ $employee->name }}</h2><p>Part of Waku-Waku since {{ $employee->hire_date->format('F Y') }}</p></div></div><dl class="admin-detail-list"><div><dt>Staff email</dt><dd>{{ $employee->email }}</dd></div><div><dt>Phone</dt><dd>{{ $employee->contact }}</dd></div><div><dt>Position</dt><dd>{{ $employee->position }}</dd></div><div><dt>Shift</dt><dd>{{ $employee->shift }}</dd></div><div><dt>Hire date</dt><dd>{{ $employee->hire_date->format('M j, Y') }}</dd></div><div><dt>Orders worked on</dt><dd>{{ $ordersHandled }}</dd></div></dl></div></section>
+        <section class="admin-panel"><div class="admin-panel-header mb-4"><div><h2>Recent check-ins</h2></div></div><div class="table-responsive"><table class="table admin-table" data-responsive><caption class="visually-hidden">Recent attendance for {{ $employee->name }}</caption><thead><tr><th scope="col">Date</th><th scope="col">Check-in</th><th scope="col">Check-out</th><th scope="col">Status</th></tr></thead><tbody>@forelse($attendance as $record)<tr><td>{{ $record->date->format('M j, Y') }}</td><td data-label="Check-in">{{ $record->check_in?->format('g:i A') ?? 'Not recorded' }}</td><td data-label="Check-out">{{ $record->check_out?->format('g:i A') ?? 'Not recorded' }}</td><td data-label="Status"><span class="status-pill {{ strtolower($record->status) === 'late' ? 'status-pending' : 'status-ready' }}">{{ $record->status }}</span></td></tr>@empty<tr><td colspan="4"><div class="admin-empty"><i class="bi bi-calendar-check" aria-hidden="true"></i><h3>No check-ins yet.</h3><p class="mb-0">Attendance will appear after this employee checks in.</p></div></td></tr>@endforelse</tbody></table></div></section>
     </div>
+    <aside class="admin-panel admin-actions-panel"><div class="admin-panel-header"><h2>Account access</h2></div><div class="admin-panel-body"><p>{{ $active ? 'This employee can sign in to the staff workspace, update orders, and record attendance.' : 'This employee cannot sign in. Their previous orders and attendance remain available.' }}</p><form method="POST" action="{{ route($active ? 'employees.deactivate' : 'employees.activate', $employee->id) }}" data-single-submit>@csrf @method('PATCH')<button class="btn {{ $active ? 'btn-light' : 'btn-primary' }} w-100" type="submit">{{ $active ? 'Deactivate account' : 'Activate account' }}</button></form><a class="btn btn-light w-100 mt-2" href="{{ route('reports.attendance') }}">View attendance report</a></div></aside>
 </div>
-
-@push('styles')
-<style>
-    body {
-        background-color: #f8f9fa;
-    }
-    .card {
-        border: none;
-        box-shadow: 0 0 15px rgba(0,0,0,0.05);
-    }
-    .card-header {
-        border-bottom: 1px solid #e9ecef;
-    }
-    dt {
-        font-weight: 500;
-    }
-    dd {
-        margin-bottom: 0.5rem;
-    }
-</style>
-@endpush
-@endsection 
+@endsection

@@ -9,6 +9,26 @@ use App\Models\UserLog;
 
 class ProfileController extends Controller
 {
+    public function updateAdmin(Request $request)
+    {
+        $user = $request->user();
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', \Illuminate\Validation\Rule::unique('users', 'username')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'current_password' => ['nullable', 'required_with:password', 'current_password'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+        $user->fill([
+            'name' => $data['name'], 'username' => $data['username'],
+            'phone' => $data['phone'] ?? '', 'address' => $data['address'] ?? '',
+        ]);
+        if (!empty($data['password'])) $user->password = Hash::make($data['password']);
+        $user->save();
+        return redirect()->route('settings.profile')->with('success', 'Your admin account has been updated.');
+    }
+
     public function update(Request $request)
     {
         $user = Auth::user();

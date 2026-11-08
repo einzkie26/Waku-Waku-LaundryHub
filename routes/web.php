@@ -11,6 +11,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserLogController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\AdminCustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CustomerBookingController;
 use App\Http\Controllers\LandingController;
@@ -113,10 +114,15 @@ Route::prefix('admin')
 
         // Customers
         Route::prefix('customers')->group(function () {
-            Route::get('/', [CustomerController::class, 'index'])->name('admin.customers.index');
+            Route::get('/', [AdminCustomerController::class, 'index'])->name('admin.customers.index');
+            Route::get('/create', [AdminCustomerController::class, 'create'])->name('admin.customers.create');
+            Route::post('/', [AdminCustomerController::class, 'store'])->name('admin.customers.store');
             Route::get('/list', [CustomerController::class, 'getCustomers'])->name('admin.customers.list');
             Route::get('/{id}/orders', [CustomerController::class, 'getCustomerOrders'])->name('admin.customers.orders');
             Route::get('/{id}/recent-orders', [CustomerController::class, 'getRecentOrders'])->name('admin.customers.recent-orders');
+            Route::get('/{id}/edit', [AdminCustomerController::class, 'edit'])->name('admin.customers.edit');
+            Route::put('/{id}', [AdminCustomerController::class, 'update'])->name('admin.customers.update');
+            Route::get('/{id}', [AdminCustomerController::class, 'show'])->name('admin.customers.show');
         });
 
         // Employees
@@ -142,6 +148,7 @@ Route::prefix('admin')
         Route::get('/settings/profile', function () {
             return view('admin.settings.profile');
         })->name('settings.profile');
+        Route::put('/settings/profile', [ProfileController::class, 'updateAdmin'])->name('settings.profile.update');
     });
 
 /*
@@ -188,9 +195,3 @@ Route::middleware(['staff.auth'])->prefix('staff')->name('staff.')->group(functi
 });
 
 Route::get('/receipt/{order}', [App\Http\Controllers\OrderController::class, 'showReceipt'])->name('receipt.show');
-
-// Admin Customer Routes
-Route::middleware(['auth', AdminMiddleware::class])->group(function () {
-    Route::get('/admin/customers', [CustomerController::class, 'index'])->name('admin.customers.index');
-    Route::get('/admin/customers/{id}', [CustomerController::class, 'adminShow'])->name('admin.customers.show');
-});

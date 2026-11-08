@@ -1,79 +1,34 @@
-<aside class="admin-sidebar shadow-sm d-flex flex-column align-items-center" style="min-height: 100vh; width: 250px; position: fixed; top: 0; left: 0; z-index: 1040; border-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-family: 'Inter', sans-serif; background: #1E6AA8;">
-    <!-- Logo and Brand -->
-    <div class="w-100 text-center py-4 border-bottom" style="background: #1E6AA8; border-radius: 0;" data-aos="fade-down" data-aos-duration="300">
-        <img src="{{ asset('img/logo.png') }}" alt="Logo" style="max-width: 60px; max-height: 60px; margin-bottom: 0.5rem;">
-        <div class="fw-bold text-white" style="font-size: 1.2rem; letter-spacing: 1px;">Waku Laundry System</div>
-        <div class="text-white" style="font-size: 1rem; font-weight: 500;">Admin Portal</div>
-    </div>
-    <!-- Navigation -->
-    <nav class="w-100 px-3 py-4">
-        <ul class="nav flex-column">
-            <li class="nav-item" data-aos="fade-right" data-aos-duration="300" data-aos-delay="50">
-                <a href="{{ route('admin.dashboard') }}" class="nav-link px-4 py-3 rounded-pill mb-2 {{ Route::is('admin.dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item" data-aos="fade-right" data-aos-duration="300" data-aos-delay="100">
-                <a href="{{ route('orders.index') }}" class="nav-link px-4 py-3 rounded-pill mb-2 {{ Route::is('orders.*') ? 'active' : '' }}">
-                    <i class="fas fa-shopping-cart me-2"></i> Orders
-                </a>
-            </li>
-            <li class="nav-item" data-aos="fade-right" data-aos-duration="300" data-aos-delay="150">
-                <a href="{{ route('admin.customers.index') }}" class="nav-link px-4 py-3 rounded-pill mb-2 {{ Route::is('admin.customers.*') ? 'active' : '' }}">
-                    <i class="fas fa-users me-2"></i> Customers
-                </a>
-            </li>
-            <li class="nav-item" data-aos="fade-right" data-aos-duration="300" data-aos-delay="200">
-                <a href="{{ route('reports.attendance') }}" class="nav-link px-4 py-3 rounded-pill mb-2 {{ Route::is('reports.attendance') ? 'active' : '' }}">
-                    <i class="fas fa-user-clock me-2"></i> Attendance Report
-                </a>
-            </li>
-            <li class="nav-item" data-aos="fade-right" data-aos-duration="300" data-aos-delay="250">
-                <a href="{{ route('reports.revenue-report') }}" class="nav-link px-4 py-3 rounded-pill mb-2 {{ Route::is('reports.revenue-report') ? 'active' : '' }}">
-                    <i class="fas fa-chart-line me-2"></i> Revenue Report
-                </a>
-            </li>
-            <li class="nav-item" data-aos="fade-right" data-aos-duration="300" data-aos-delay="300">
-                <a href="{{ route('reports.service-stats') }}" class="nav-link px-4 py-3 rounded-pill mb-2 {{ Route::is('reports.service-stats') ? 'active' : '' }}">
-                    <i class="fas fa-chart-pie me-2"></i> Service Stats
-                </a>
-            </li>
-            <li class="nav-item" data-aos="fade-right" data-aos-duration="300" data-aos-delay="350">
-                <a href="{{ route('employees.list') }}" class="nav-link px-4 py-3 rounded-pill mb-2 {{ Route::is('employees.*') ? 'active' : '' }}">
-                    <i class="fas fa-user-tie me-2"></i> Staff Management
-                </a>
-            </li>
-        </ul>
+@php
+    $navigationLinks = [
+        ['admin.dashboard', 'Overview', 'grid-1x2', 'admin.dashboard'],
+        ['orders.index', 'Orders', 'basket', 'orders.*'],
+        ['admin.customers.index', 'Customers', 'people', 'admin.customers.*'],
+        ['employees.list', 'Employees', 'person-badge', 'employees.*'],
+        ['reports.attendance', 'Attendance', 'calendar-check', 'reports.attendance*'],
+        ['reports.revenue-report', 'Revenue', 'bar-chart-line', 'reports.revenue-report'],
+        ['reports.service-stats', 'Services', 'pie-chart', 'reports.service-stats'],
+        ['settings.profile', 'Settings', 'gear', 'settings.profile*'],
+        ['landing', 'Customer site', 'box-arrow-up-right', 'landing'],
+    ];
+@endphp
+<div class="admin-radial-nav" id="admin-navigation" data-dock="bottom-left">
+    <button class="admin-radial-toggle" id="admin-menu-toggle" type="button" aria-controls="admin-radial-selections" aria-expanded="false" aria-label="Open admin navigation" aria-describedby="admin-navigation-help" title="Click to open navigation. Drag to an edge or corner.">
+        <img src="{{ asset('img/logo.png') }}" alt="" width="46" height="46" draggable="false">
+    </button>
+    <span class="admin-radial-caption" aria-hidden="true">Menu <i class="bi bi-plus" aria-hidden="true"></i></span>
+    <nav class="admin-radial-selections" id="admin-radial-selections" aria-label="Admin navigation" hidden inert>
+        @foreach($navigationLinks as [$route, $label, $icon, $pattern])
+            <a class="admin-radial-choice {{ request()->routeIs($pattern) ? 'active' : '' }}" href="{{ route($route) }}" data-nav-choice tabindex="-1" @if(request()->routeIs($pattern)) aria-current="page" @endif>
+                <i class="bi bi-{{ $icon }}" aria-hidden="true"></i><span>{{ $label }}</span>
+            </a>
+        @endforeach
     </nav>
-</aside>
-<style>
-.admin-sidebar {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    border-right: 1px solid #e0e0e0;
-    background: #fff;
-    width: 250px !important;
-    min-width: 250px !important;
-    max-width: 250px !important;
-}
-.admin-sidebar .nav-link {
-    color: #333;
-    font-weight: 500;
-    border-radius: 2rem;
-    margin-bottom: 0.25rem;
-    transition: background 0.2s, color 0.2s;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-}
-.admin-sidebar .nav-link.active, .admin-sidebar .nav-link:hover {
-    background: #003087;
-    color: #fff;
-}
-.admin-sidebar .nav-link i {
-    width: 22px;
-    text-align: center;
-}
-@media (max-width: 991px) {
-    .admin-sidebar { width: 100% !important; min-width: auto !important; max-width: 100% !important; min-height: auto; position: relative; border-radius: 0; }
-}
-</style>
+    <span class="admin-radial-tip" aria-hidden="true">Click logo to close<small>Drag logo to dock</small></span>
+    <span class="visually-hidden" id="admin-navigation-help">Click or press Enter to expand navigation. Drag the logo to snap to one of eight edges or corners. When the logo is focused, use the arrow keys to change its dock. Press Escape to collapse.</span>
+    <span class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-dock-status></span>
+</div>
+<noscript>
+    <nav class="admin-nav-fallback" aria-label="Admin navigation">
+        @foreach($navigationLinks as [$route, $label])<a href="{{ route($route) }}">{{ $label }}</a>@endforeach
+    </nav>
+</noscript>

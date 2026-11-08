@@ -61,6 +61,23 @@ class LaundryOrderService
         });
     }
 
+    public function recordPayment(Order $order, array $data): Order
+    {
+        return DB::transaction(function () use ($order, $data) {
+            $order = Order::lockForUpdate()->findOrFail($order->id);
+            if ($order->status === 'Refunded') {
+                throw ValidationException::withMessages(['payment' => 'A refunded order cannot receive another payment.']);
+            }
+            if ($order->payment_status !== 'paid') {
+                $order->update([
+                    'payment_status' => 'paid', 'payment_method' => $data['payment_method'],
+                    'payment_reference' => $data['payment_reference'] ?? null, 'paid_at' => now(),
+                ]);
+            }
+            return $order;
+        });
+    }
+
     public function advance(Order $order, string $operatorType, int $operatorId, ?string $expectedStatus = null): Order
     {
         return DB::transaction(function () use ($order, $operatorType, $operatorId, $expectedStatus) {

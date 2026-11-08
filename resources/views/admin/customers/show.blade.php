@@ -1,106 +1,12 @@
-@extends('admin.layouts.app')
-
+@extends('layouts.admin-app')
+@section('title', 'Customer profile')
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Customer Details</h3>
-                    <div class="card-tools">
-                        <a href="{{ route('admin.customers.index') }}" class="btn btn-sm btn-default">
-                            <i class="fas fa-arrow-left"></i> Back to List
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h4>Personal Information</h4>
-                            <table class="table table-bordered">
-                                <tr>
-                                    <th>Name</th>
-                                    <td>{{ $customer->name }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Username</th>
-                                    <td>{{ $customer->username }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Phone</th>
-                                    <td>{{ $customer->phone }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Address</th>
-                                    <td>{{ $customer->address }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Registered On</th>
-                                    <td>{{ $customer->created_at->format('M d, Y H:i A') }}</td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="col-md-6">
-                            <h4>Order Statistics</h4>
-                            <table class="table table-bordered">
-                                <tr>
-                                    <th>Total Orders</th>
-                                    <td>{{ $customer->orders->count() }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Total Spent</th>
-                                    <td>₱{{ number_format($customer->total_amount, 2) }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Last Order</th>
-                                    <td>
-                                        @if($customer->orders->isNotEmpty())
-                                            {{ $customer->orders->sortByDesc('created_at')->first()->created_at->format('M d, Y H:i A') }}
-                                        @else
-                                            No orders yet
-                                        @endif
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <h4>Recent Orders</h4>
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Order ID</th>
-                                            <th>Date</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($customer->orders->sortByDesc('created_at')->take(5) as $order)
-                                            <tr>
-                                                <td>{{ $order->id }}</td>
-                                                <td>{{ $order->created_at->format('M d, Y H:i A') }}</td>
-                                                <td>
-                                                    <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-info">
-                                                        <i class="fas fa-eye"></i> View
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5" class="text-center">No orders found</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<div class="admin-heading"><div><a class="admin-back-link" href="{{ route('admin.customers.index') }}"><i class="bi bi-arrow-left" aria-hidden="true"></i>Customers</a><h1>{{ $customer->name }}</h1></div><div class="admin-heading-actions"><a class="btn btn-light" href="{{ route('admin.customers.edit', $customer->id) }}"><i class="bi bi-pencil me-2" aria-hidden="true"></i>Edit details</a><a class="btn btn-primary" href="{{ route('orders.create', ['customer' => $customer->id]) }}"><i class="bi bi-plus-lg me-2" aria-hidden="true"></i>New order</a></div></div>
+@include('admin.components.metrics', ['items' => [
+    ['label' => 'Total orders', 'value' => $metrics['orders'], 'note' => 'All previous and active loads', 'icon' => 'basket'],
+    ['label' => 'In progress', 'value' => $metrics['active'], 'note' => 'Currently in our care', 'icon' => 'arrow-repeat'],
+    ['label' => 'Payments received', 'value' => '₱'.number_format($metrics['paid'], 2), 'note' => 'Excludes refunded orders', 'icon' => 'wallet2', 'featured' => true],
+]])
+<section class="admin-panel mb-4"><div class="admin-panel-header"><h2>Contact & pickup details</h2></div><div class="admin-panel-body"><dl class="admin-detail-list"><div><dt>Phone number</dt><dd>{{ $customer->phone ?: 'Not provided' }}</dd></div><div><dt>Username</dt><dd>{{ $customer->username }}</dd></div><div class="full"><dt>Pickup address</dt><dd>{{ $customer->address ?: 'Not provided' }}</dd></div></dl></div></section>
+<section class="admin-panel"><div class="admin-panel-header mb-4"><div><h2>Order history</h2></div></div>@include('admin.components.order-table', ['compact' => true])@if($orders->hasPages())<div class="admin-pagination">{{ $orders->links('pagination::bootstrap-5') }}</div>@endif</section>
 @endsection

@@ -4,36 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\User;
-use Carbon\Carbon;
-
+use App\Services\AdminReportService;
 use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
 {
-    //
-    public function index()
-{
-    $dailyRevenue = Order::whereDate('created_at', Carbon::today())->sum('total_price');
-    $monthlyRevenue = Order::whereMonth('created_at', Carbon::now()->month)->sum('total_price');
-    $totalOrders = Order::count();
-    $pendingOrders = Order::where('status', 'Pending')->count();
-    $activeCustomers = User::has('orders')->count();
+    public function index(Request $request, AdminReportService $reports)
+    {
+        $request->validate(['period' => ['nullable', 'in:week,month']]);
+        $period = $request->query('period', 'week');
+        $report = $reports->revenue($period);
+        $metrics = [
+            'collectedToday' => (float) $reports->paidOrders(today(), now()->endOfDay())->sum(\Illuminate\Support\Facades\DB::raw(AdminReportService::AMOUNT)),
+            'activeOrders' => Order::whereNotIn('status', ['Completed', 'Refunded'])->count(),
+            'readyOrders' => Order::where('status', 'Ready')->count(),
+            'customers' => User::where('role', 'customer')->count(),
+        ];
+        $recentOrders = Order::with('user')->latest()->take(6)->get();
+        $serviceVolumes = Order::where('status', '!=', 'Refunded')
+            ->whereBetween('created_at', [$report['startDate'], $report['endDate']])
+            ->selectRaw('service, COUNT(*) as orders')->groupBy('service')->orderByDesc('orders')->get();
 
-    $recentOrders = Order::latest()->take(6)->get();
-    $topServices = Order::select('service', \DB::raw('count(*) as orders'), \DB::raw('sum(total_price) as revenue'))
-                        ->groupBy('service')
-                        ->orderByDesc('orders')
-                        ->take(6)
-                        ->get();
-
-    return view('admin.dashboard', compact(
-        'dailyRevenue',
-        'monthlyRevenue',
-        'totalOrders',
-        'pendingOrders',
-        'activeCustomers',
-        'recentOrders',
-        'topServices'
-    ));
-}
+        return view('admin.dashboard', compact('metrics', 'recentOrders', 'serviceVolumes', 'report', 'period'));
+    }
 }

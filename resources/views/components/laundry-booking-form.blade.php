@@ -19,7 +19,7 @@
                         <option value="">Choose a customer</option>
                         @foreach($customers as $customer)<option value="{{ $customer->id }}" data-name="{{ $customer->name }}" data-phone="{{ $customer->phone }}" data-address="{{ $customer->address }}" @selected(old('user_id', request('customer')) == $customer->id)>{{ $customer->name }} · {{ $customer->phone }}</option>@endforeach
                     </select>
-                    <p class="form-text">New customer? <a href="{{ route('staff.customers.create') }}">Add their details first</a>, then return to this form.</p>
+                    <p class="form-text">New customer? <a href="{{ $customerCreateUrl ?? route('staff.customers.create') }}">Add their details first</a>, then return to this form.</p>
                 </div>
             @endif
             <fieldset>
@@ -96,7 +96,7 @@
             <div class="notice mt-4"><div class="notice-title">No online payment needed</div><p>Payment starts as unpaid. Our team records it when received, and you can check it in My orders.</p></div>
         @endif
         <button class="btn btn-primary w-100 mt-4" type="submit">{{ $operator ? 'Create order' : 'Confirm booking' }} <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i></button>
-        <a href="{{ $operator ? route('staff.orders.index') : route('customer.orders.history') }}" class="btn btn-light w-100 mt-2">Cancel</a>
+        <a href="{{ $cancelUrl ?? ($operator ? route('staff.orders.index') : route('customer.orders.history')) }}" class="btn btn-light w-100 mt-2">Cancel</a>
         <noscript><p class="form-text mt-3">Your final total is calculated securely when you confirm. Enable JavaScript for a live price preview.</p></noscript>
     </aside>
 </form>

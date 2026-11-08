@@ -1,0 +1,15 @@
+<div class="admin-split-form">
+    <section class="admin-panel"><div class="admin-panel-header"><h2>{{ isset($customer) ? 'Contact details' : 'Contact & sign-in details' }}</h2></div><div class="admin-panel-body">
+        <form method="POST" action="{{ isset($customer) ? route('admin.customers.update', $customer->id) : route('admin.customers.store') }}" data-single-submit>@csrf @if(isset($customer)) @method('PUT') @endif
+            <div class="row g-3">
+                <div class="col-sm-6"><label class="form-label" for="name">Full name</label><input class="form-control" name="name" id="name" value="{{ old('name', $customer->name ?? '') }}" maxlength="255" autocomplete="name" required></div>
+                <div class="col-sm-6"><label class="form-label" for="username">Username</label><input class="form-control" name="username" id="username" value="{{ old('username', $customer->username ?? '') }}" maxlength="255" autocomplete="off" required></div>
+                <div class="col-12"><label class="form-label" for="phone">Phone number</label><input class="form-control" type="tel" name="phone" id="phone" value="{{ old('phone', $customer->phone ?? '') }}" maxlength="20" autocomplete="tel" required></div>
+                <div class="col-12"><label class="form-label" for="address">Pickup address</label><textarea class="form-control" name="address" id="address" maxlength="255" rows="3" autocomplete="street-address" required>{{ old('address', $customer->address ?? '') }}</textarea><p class="form-text">Include the house or unit number, street, barangay, and city.</p></div>
+                @unless(isset($customer))<div class="col-12"><hr><div class="admin-section-kicker">CUSTOMER SIGN-IN</div></div><div class="col-sm-6"><label class="form-label" for="password">Password</label><input class="form-control" type="password" id="password" name="password" minlength="8" autocomplete="new-password" required></div><div class="col-sm-6"><label class="form-label" for="password_confirmation">Confirm password</label><input class="form-control" type="password" id="password_confirmation" name="password_confirmation" minlength="8" autocomplete="new-password" required></div><div class="col-12"><p class="form-text mb-0">Set the sign-in details with the customer. Use at least 8 characters.</p></div>@endunless
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-4"><button class="btn btn-primary" type="submit">{{ isset($customer) ? 'Save customer details' : 'Add customer' }}</button><a class="btn btn-light" href="{{ isset($customer) ? route('admin.customers.show', $customer->id) : route('admin.customers.index') }}">Cancel</a></div>
+        </form>
+    </div></section>
+    <aside class="admin-panel admin-actions-panel"><div class="admin-panel-body"><div class="admin-section-kicker">THOUGHTFUL CARE STARTS HERE</div><h2 class="h5 mb-3">Make the next pickup easier.</h2><p>Check the phone number and full address with the customer so our team knows where to go.</p><p class="mb-0">Their username lets them sign in, book a pickup, and follow their laundry.</p></div></aside>
+</div>

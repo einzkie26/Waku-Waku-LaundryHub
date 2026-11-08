@@ -25,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\Blade::anonymousComponentPath(resource_path('views/admin/components'));
         //
         Route::middlewareGroup('staff.auth', [StaffAuth::class]);
         View::composer('staff.*', function ($view) {
