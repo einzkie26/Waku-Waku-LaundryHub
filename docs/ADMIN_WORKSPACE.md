@@ -25,7 +25,7 @@ On the Employees page, **Add employee** opens a scrollable modal. Validation err
 
 ## Data rules
 
-Customer, staff, and admin order creation use `LaundryOrderService` and `LaundryWorkflow`. Prices are calculated on the server and include optional extras. Status actions advance one step and reject stale forms. Pickup rescheduling is available before collection.
+Customer, staff, and admin order creation use `LaundryOrderService`, `LaundryWorkflow`, and `LaundryProducts`. Prices are calculated on the server and include selected detergent sachets, measured softener, and optional extras. Product rates, cup controls, and the shared sign-in are documented in [PRODUCTS_AND_LOGIN.md](PRODUCTS_AND_LOGIN.md). Status actions advance one step and reject stale forms. Pickup rescheduling is available before collection.
 
 Laundry progress and payment status are separate. Payment recording documents money already received; it does not contact a payment gateway. Recording an existing payment again preserves its original details. Refund recording supports full refunds already issued outside the app, closes the order, and records the reason in the admin activity log.
 

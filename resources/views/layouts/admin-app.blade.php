@@ -27,7 +27,7 @@
     </main>
     @include('admin.settings.modal')
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('js/laundryhub.js') }}" defer></script>
+    <script src="{{ asset('js/laundryhub.js') }}?v={{ filemtime(public_path('js/laundryhub.js')) }}" defer></script>
     <script src="{{ asset('js/admin-workspace.js') }}?v={{ filemtime(public_path('js/admin-workspace.js')) }}" defer></script>
     @stack('scripts')
     @yield('scripts')

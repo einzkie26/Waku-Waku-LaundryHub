@@ -22,7 +22,7 @@
     </main>
     @include('partials.footer')
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('js/laundryhub.js') }}" defer></script>
+    <script src="{{ asset('js/laundryhub.js') }}?v={{ filemtime(public_path('js/laundryhub.js')) }}" defer></script>
     @stack('scripts')
 </body>
 </html>

@@ -1,51 +1,6 @@
 (() => {
     'use strict';
     document.querySelector('[data-print-receipt]')?.addEventListener('click', () => window.print());
-    const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value);
-    const booking = document.getElementById('laundry-booking');
-    const catalogElement = document.getElementById('laundry-catalog');
-    if (booking && catalogElement) {
-        const catalog = JSON.parse(catalogElement.textContent);
-        const show = (selector, value) => { const target = booking.querySelector(selector); if (target) target.textContent = value; };
-        const update = () => {
-            const service = booking.querySelector('[name="service"]:checked')?.value;
-            booking.querySelectorAll('[data-extra-option]').forEach(option => {
-                const included = option.dataset.extraOption === service;
-                const input = option.querySelector('input');
-                option.hidden = included;
-                input.disabled = included;
-                if (included) input.checked = false;
-            });
-            const weight = Math.max(0, Number(booking.elements.weight.value) || 0);
-            const base = (catalog.services[service]?.price || 0) * weight;
-            const extras = [...booking.querySelectorAll('[name="additional_services[]"]:checked')].map(input => input.value);
-            const additional = extras.reduce((sum, extra) => sum + (catalog.extras[extra] || 0), 0);
-            show('[data-summary-service]', service || 'Choose a service');
-            show('[data-summary-weight]', weight ? weight + ' kg × ' + money(catalog.services[service]?.price || 0) + ' / kg' : 'Add a weight to see your total');
-            show('[data-summary-base]', money(base));
-            show('[data-summary-extras-total]', money(additional));
-            show('[data-summary-total]', money(base + additional));
-            const extraList = booking.querySelector('[data-summary-extras]');
-            extraList.replaceChildren(...extras.map(extra => { const li = document.createElement('li'); li.textContent = extra; return li; }));
-            const date = booking.elements.date.value;
-            const time = booking.elements.time;
-            [...time.options].forEach(option => {
-                option.disabled = Boolean(option.value && date === time.dataset.today && option.value <= time.dataset.currentTime);
-            });
-            if (time.selectedOptions[0]?.disabled) time.value = '';
-            show('[data-summary-pickup]', date && time.value ? new Date(date + 'T12:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) + ' · ' + time.selectedOptions[0].textContent : 'Choose a date & time');
-            const customer = booking.elements.user_id?.selectedOptions[0];
-            if (customer) {
-                show('[data-customer-name]', customer.dataset.name || 'Choose a customer above');
-                show('[data-customer-phone]', customer.dataset.phone || '');
-                show('[data-customer-address]', customer.dataset.address || '');
-            }
-        };
-        booking.addEventListener('input', update);
-        booking.addEventListener('change', update);
-        update();
-    }
-
     const updatePayment = form => {
         const status = form.querySelector('[name="payment_status"]');
         const method = form.querySelector('[name="payment_method"]');

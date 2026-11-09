@@ -60,7 +60,7 @@ class AdminWorkspaceTest extends TestCase
         return array_merge([
             'service' => 'Wash & Fold', 'laundry_style' => 'Regular Wash', 'fabric_type' => 'Mixed',
             'weight' => 2.5, 'date' => '2026-11-08', 'time' => '09:00',
-            'additional_services' => ['Fabric Softener'], 'payment_status' => 'pending',
+            'additional_services' => ['Scent Boost'], 'payment_status' => 'pending',
         ], $overrides);
     }
 
@@ -123,13 +123,13 @@ class AdminWorkspaceTest extends TestCase
         $unpaid = $this->order();
         $report = app(AdminReportService::class)->revenue('week');
 
-        $this->assertEquals(155, $report['totalRevenue']);
+        $this->assertEquals(150, $report['totalRevenue']);
         $this->assertSame(1, $report['totalPaidOrders']);
         $this->assertCount(7, $report['series']);
-        $this->assertEquals(155 / 7, $report['averageDaily']);
+        $this->assertEquals(150 / 7, $report['averageDaily']);
         $this->get('/admin/reports/revenue-report')->assertOk()->assertSee($paid->reference_no)
-            ->assertDontSee($refunded->reference_no)->assertDontSee($unpaid->reference_no)->assertSee('155.00');
-        $this->get('/admin/dashboard')->assertOk()->assertSee('155.00');
+            ->assertDontSee($refunded->reference_no)->assertDontSee($unpaid->reference_no)->assertSee('150.00');
+        $this->get('/admin/dashboard')->assertOk()->assertSee('150.00');
     }
 
     public function test_revenue_zero_fills_days_and_supports_monthly_and_legacy_payments(): void
@@ -139,7 +139,7 @@ class AdminWorkspaceTest extends TestCase
         $order->update(['payment_status' => 'paid', 'paid_at' => null]);
         $report = app(AdminReportService::class)->revenue('month');
         $this->assertCount(30, $report['series']);
-        $this->assertEquals(155, $report['totalRevenue']);
+        $this->assertEquals(150, $report['totalRevenue']);
         $this->assertEquals(0, $report['series']->first()['revenue']);
         $this->get('/admin/reports/revenue-report?period=month')->assertOk();
         $this->get('/admin/dashboard?period=month')->assertOk();
@@ -172,7 +172,7 @@ class AdminWorkspaceTest extends TestCase
         $this->post('/admin/orders', $this->details(['user_id' => $customer->id, 'total_amount' => 1]))
             ->assertRedirect()->assertSessionHasNoErrors();
         $order = Order::sole();
-        $this->assertEquals(155, $order->total_amount);
+        $this->assertEquals(150, $order->total_amount);
         $this->assertSame('admin', $order->operator_type);
         $this->assertDatabaseHas('order_status_histories', ['order_id' => $order->id, 'changed_by_type' => 'admin', 'changed_by_id' => $admin->id, 'status' => 'Pending']);
     }
@@ -227,7 +227,7 @@ class AdminWorkspaceTest extends TestCase
         $order->update(['payment_status' => 'paid', 'payment_method' => 'Cash', 'paid_at' => now()]);
         $this->post(route('orders.refund', $order->id), ['refund_amount' => 50, 'refund_reason' => 'Test'])->assertSessionHasErrors('refund_amount');
         $this->assertSame('Pending', $order->fresh()->status);
-        $this->post(route('orders.refund', $order->id), ['refund_amount' => 155, 'refund_reason' => 'Customer refunded in cash'])
+        $this->post(route('orders.refund', $order->id), ['refund_amount' => 150, 'refund_reason' => 'Customer refunded in cash'])
             ->assertRedirect()->assertSessionHasNoErrors();
         $this->assertSame('Refunded', $order->fresh()->status);
         $this->assertDatabaseHas('order_status_histories', ['order_id' => $order->id, 'status' => 'Refunded', 'changed_by_type' => 'admin']);
@@ -365,7 +365,7 @@ class AdminWorkspaceTest extends TestCase
             '_admin_modal' => 'order-create', '_return_to' => $target,
         ])->assertRedirect($target)->assertSessionHasNoErrors()->assertSessionHas('new_order_id');
         $order = Order::sole();
-        $this->assertSame(155.0, (float) $order->total_amount);
+        $this->assertSame(150.0, (float) $order->total_amount);
         $this->assertSame('paid', $order->payment_status);
         $this->assertSame('PAY-MODAL-123', $order->payment_reference);
         $this->assertSame('Pending', $order->status);
@@ -482,7 +482,7 @@ class AdminWorkspaceTest extends TestCase
     {
         $this->admin();
         $this->order();
-        $response = $this->get('/admin/reports/service-stats?period=all')->assertOk()->assertSee('155.00')->assertSee('Dry Cleaning');
+        $response = $this->get('/admin/reports/service-stats?period=all')->assertOk()->assertSee('150.00')->assertSee('Dry Cleaning');
         $this->assertSame(1, $response->viewData('totalOrders'));
         $this->assertEquals(2.5, $response->viewData('totalWeight'));
     }

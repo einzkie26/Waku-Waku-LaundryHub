@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class AdminReportService
 {
-    public const AMOUNT = '(COALESCE(orders.total_price, 0) + COALESCE(orders.additional_charges, 0))';
+    public const AMOUNT = '(COALESCE(orders.total_price, 0) + COALESCE(orders.additional_charges, 0) + COALESCE(orders.product_charges, 0))';
     public const PAYMENT_DATE = 'COALESCE(orders.paid_at, orders.created_at)';
 
     public function dates(string $period): array

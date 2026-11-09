@@ -2,7 +2,7 @@
 @section('title', 'Track '.$order->reference_no)
 @section('content')
 <div class="container">
-    <div class="page-heading"><div><a href="{{ route('customer.orders.history') }}" class="small d-inline-block mb-3">← My orders</a><h1>Your laundry, in the loop.</h1><p><span class="reference">{{ $order->reference_no }}</span> · {{ $order->service }}</p></div>@include('components.order-status', ['order' => $order])</div>
+    <div class="page-heading"><div><a href="{{ route('customer.orders.history') }}" class="small d-inline-block mb-3">← My orders</a><h1>{{ $order->reference_no }}</h1></div>@include('components.order-status', ['order' => $order])</div>
     <div class="detail-grid">
         <div>
             <section class="surface mb-4"><div class="eyebrow">What happens next</div><h2>{{ \App\Support\LaundryWorkflow::label($order->status) }}</h2>@include('components.order-timeline', ['order' => $order])</section>

@@ -114,8 +114,10 @@ class OrderController extends Controller
 
     public function showReceipt($orderId)
     {
-        $staff = session('staff_id') && Employee::whereKey(session('staff_id'))->whereRaw('LOWER(status) = ?', ['active'])->exists();
-        abort_unless(auth()->check() || $staff, 403);
+        $staffId = auth('staff')->id() ?? session('staff_id');
+        $staff = !auth('web')->check() && $staffId && Employee::whereKey($staffId)->where('is_active', true)->whereRaw('LOWER(status) = ?', ['active'])->exists();
+        abort_unless(auth('web')->check() || $staff, 403);
+        if ($staff) session(['staff_id' => $staffId]);
         $query = Order::with(['user', 'statusHistories'])->whereKey($orderId);
         if (!$staff && auth()->user()->role !== 'admin') $query->where('user_id', auth()->id());
         $order = $query->firstOrFail();

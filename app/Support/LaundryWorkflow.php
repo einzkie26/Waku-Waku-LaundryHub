@@ -14,12 +14,9 @@ class LaundryWorkflow
     ];
 
     public const EXTRAS = [
-        'Stain Removal' => 50,
-        'Fabric Softener' => 30,
         'Scent Boost' => 25,
-        'Express Service' => 100,
         'Hang Dry' => 20,
-        'Ironing' => 40,
+        'With Packaging' => 35,
     ];
 
     public const STYLES = ['Regular Wash', 'Delicate Wash', 'Hand Wash', 'Dry Clean Only', 'Express Wash'];
@@ -102,6 +99,6 @@ class LaundryWorkflow
             ];
         }
 
-        return $rules;
+        return $rules + LaundryProducts::rules();
     }
 }

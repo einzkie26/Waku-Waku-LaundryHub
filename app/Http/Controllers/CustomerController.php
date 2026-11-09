@@ -217,7 +217,7 @@ class CustomerController extends Controller
             }])
             ->firstOrFail();
 
-        $customer->total_amount = $customer->orders->sum('total_price');
+        $customer->total_amount = $customer->orders->sum('total_amount');
 
         return view('admin.customers.show', compact('customer'));
     }

@@ -1,7 +1,7 @@
 @extends('layouts.staff-app')
 @section('title', 'Order queue')
 @section('content')
-<div class="page-heading"><div><div class="eyebrow">Every load, one place</div><h1>Order queue</h1><p>All customer bookings and shop orders, with the next step ready to go.</p></div><a class="btn btn-primary" href="{{ route('staff.orders.create') }}"><i class="bi bi-plus-lg me-2" aria-hidden="true"></i>New order</a></div>
+<div class="page-heading"><div><h1>Order queue</h1></div><a class="btn btn-primary" href="{{ route('staff.orders.create') }}"><i class="bi bi-plus-lg me-2" aria-hidden="true"></i>New order</a></div>
 @include('staff.orders.stats')
 <div class="workflow-hint"><i class="bi bi-signpost-split" aria-hidden="true"></i><div><strong>Pickup → Cleaning → Ready → Delivered</strong><br>Use the action beside each order only when that step happens. Open Details to review instructions or record payment.</div></div>
 <form method="GET" action="{{ route('staff.orders.index') }}" class="filter-bar">

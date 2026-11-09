@@ -30,11 +30,11 @@ class LoginController extends Controller
         if ($employee && Hash::check($request->password, $employee->password)) {
             $user = User::where('username', $identity)->first();
             if ($user && Hash::check($request->password, $user->password)) {
-                return back()->withErrors(['username' => 'These details match more than one account. Ask the administrator to update your username.'])
+                return redirect()->route('login.form')->withErrors(['username' => 'These details match more than one account. Ask the administrator to update your username.'])
                     ->withInput($request->only('username', 'remember'));
             }
             if (!$employee->is_active || strtolower($employee->status) !== 'active') {
-                return back()->withErrors(['username' => 'Your staff account is inactive. Please contact the administrator.'])
+                return redirect()->route('login.form')->withErrors(['username' => 'Your staff account is inactive. Please contact the administrator.'])
                     ->withInput($request->only('username', 'remember'));
             }
             Auth::guard('web')->logout();
@@ -60,7 +60,7 @@ class LoginController extends Controller
             return redirect()->intended(route('landing'));
         }
 
-        return back()->withErrors([
+        return redirect()->route('login.form')->withErrors([
             'username' => 'The provided credentials do not match our records.',
         ])->withInput($request->only('username', 'remember'));
     }

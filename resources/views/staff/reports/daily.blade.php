@@ -26,7 +26,7 @@
                                 <th>Date</th>
                                 <th>Total Orders</th>
                                 <th>Completed Orders</th>
-                                <th>Revenue</th>
+                                <th>Booked value</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -57,7 +57,7 @@
             <div class="col-md-6 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Revenue Trend</h5>
+                        <h5 class="card-title">Booked value trend</h5>
                         <canvas id="revenueChart"></canvas>
                     </div>
                 </div>

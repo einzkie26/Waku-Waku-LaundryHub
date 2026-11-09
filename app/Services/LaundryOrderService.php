@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Support\LaundryWorkflow;
+use App\Support\LaundryProducts;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -18,7 +19,8 @@ class LaundryOrderService
         if (in_array($data['service'], $data['additional_services'] ?? [], true)) {
             throw ValidationException::withMessages(['additional_services' => 'Your selected service is already included. Remove the matching extra to avoid paying twice.']);
         }
-        return DB::transaction(function () use ($data, $customerId, $operatorType, $operatorId) {
+        $products = LaundryProducts::quote($data);
+        return DB::transaction(function () use ($data, $customerId, $operatorType, $operatorId, $products) {
             $extras = array_values(array_unique($data['additional_services'] ?? []));
             $additionalCharges = array_sum(array_intersect_key(LaundryWorkflow::EXTRAS, array_flip($extras)));
             $basePrice = round(LaundryWorkflow::SERVICES[$data['service']]['price'] * (float) $data['weight'], 2);
@@ -39,8 +41,10 @@ class LaundryOrderService
                 'special_instructions' => $data['special_instructions'] ?? null,
                 'additional_services' => $extras,
                 'additional_charges' => $additionalCharges,
+                'laundry_products' => $products['items'],
+                'product_charges' => $products['amount_cents'] / 100,
                 'total_price' => $basePrice,
-                'total_amount' => $basePrice + $additionalCharges,
+                'total_amount' => $basePrice + $additionalCharges + $products['amount_cents'] / 100,
                 'reference_no' => $reference,
                 'status' => 'Pending',
                 'payment_status' => $paid ? 'paid' : 'pending',

@@ -2,7 +2,7 @@
 @section('title', 'My orders')
 @section('content')
 <div class="container">
-    <div class="page-heading"><div><div class="eyebrow">Your laundry, all together</div><h1>My orders</h1><p>Follow an active order or look back at a previous load.</p></div><a href="{{ route('booking.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-2" aria-hidden="true"></i>Book a pickup</a></div>
+    <div class="page-heading"><div><h1>My orders</h1></div><a href="{{ route('booking.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-2" aria-hidden="true"></i>Book a pickup</a></div>
     <nav class="tab-list mb-4" aria-label="Filter orders">
         @foreach(['active' => 'In progress', 'closed' => 'Past orders', 'all' => 'All orders'] as $key => $label)<a href="{{ route('customer.orders.history', ['view' => $key]) }}" class="{{ $view === $key ? 'active' : '' }}" @if($view === $key) aria-current="page" @endif>{{ $label }} <small>{{ $counts[$key] }}</small></a>@endforeach
     </nav>

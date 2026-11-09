@@ -34,12 +34,6 @@ use App\Http\Middleware\AdminMiddleware;
 |--------------------------------------------------------------------------
 */
 
-// Temporary route to check employees - REMOVE AFTER USE
-Route::get('/check-employees', function() {
-    $employees = \App\Models\Employee::all();
-    return $employees;
-});
-
 // Landing Page
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 

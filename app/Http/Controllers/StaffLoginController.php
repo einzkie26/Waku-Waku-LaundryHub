@@ -514,7 +514,7 @@ class StaffLoginController extends Controller
         $todayRevenue = Order::where('operator_id', $staffId)
                            ->where('operator_type', 'staff')
                            ->whereDate('created_at', Carbon::today())
-                           ->sum('total_price');
+                           ->sum(\Illuminate\Support\Facades\DB::raw(\App\Services\AdminReportService::AMOUNT));
 
         return view('staff.reports.index', compact('employee', 'todayOrders', 'todayCompleted', 'todayRevenue'));
     }
@@ -551,7 +551,7 @@ class StaffLoginController extends Controller
                 if ($order->status === 'Completed') {
                     $last7Days[$date]['completed_orders']++;
                 }
-                $last7Days[$date]['revenue'] += $order->total_price;
+                $last7Days[$date]['revenue'] += $order->total_amount;
             }
         }
 
@@ -579,7 +579,7 @@ class StaffLoginController extends Controller
                               return [
                                   'total_orders' => $orders->count(),
                                   'completed_orders' => $orders->where('status', 'Completed')->count(),
-                                  'revenue' => $orders->sum('total_price')
+                                  'revenue' => $orders->sum('total_amount')
                               ];
                           });
 
@@ -605,7 +605,7 @@ class StaffLoginController extends Controller
                               ->count();
         $totalRevenue = Order::where('operator_id', $staffId)
                            ->where('operator_type', 'staff')
-                           ->sum('total_price');
+                           ->sum(\Illuminate\Support\Facades\DB::raw(\App\Services\AdminReportService::AMOUNT));
                            
         $avgCompletionTime = Order::where('operator_id', $staffId)
                                 ->where('operator_type', 'staff')

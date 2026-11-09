@@ -1,0 +1,26 @@
+[
+  {
+    "brand": "Ariel",
+    "file": "ariel.webp",
+    "page": "https://ph.pg.com/brands-and-products/",
+    "url": "https://images.ctfassets.net/rxc7lprpd6bh/1MILu4apX228SuCIYWKISW/2427cd22fcb89aa46f1899a567421d59/Ariel.jpg?fm=webp"
+  },
+  {
+    "brand": "Downy",
+    "file": "downy.webp",
+    "page": "https://ph.pg.com/brands-and-products/",
+    "url": "https://images.ctfassets.net/rxc7lprpd6bh/5dd7VDpfVYsGsQO6uIkUqS/e78bc59f7c330bd93434a9500ea0e327/Downy.jpg?fm=webp"
+  },
+  {
+    "brand": "Surf",
+    "file": "surf.png",
+    "page": "https://www.unilever.com.ph/brands/home-care/surf/",
+    "url": "https://www.unilever.com.ph/content-images/92ui5egz/production/af93c09cc1a4cbd4ec92684e6d69dd1de175dc96-1080x1080.png?w=160&h=160&fit=crop"
+  },
+  {
+    "brand": "Breeze",
+    "file": "breeze.png",
+    "page": "https://www.unilever.com.ph/brands/home-care/breeze/",
+    "url": "https://www.unilever.com.ph/content-images/92ui5egz/production/774238ff4c9c28f25fc5041d0c8b3a4ffc9a5f6f-1080x1080.png?w=160&h=160&fit=crop"
+  }
+]

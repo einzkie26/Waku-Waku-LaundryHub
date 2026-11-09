@@ -2,7 +2,7 @@
 @section('title', 'Order details')
 @section('content')
 @php($next = \App\Support\LaundryWorkflow::nextStatus($order->service, $order->status))
-<div class="page-heading"><div><a href="{{ route('staff.orders.index') }}" class="small d-inline-block mb-3">← Order queue</a><h1>Order <span class="reference fs-4">{{ $order->reference_no }}</span></h1><p>{{ $order->user?->name ?? 'Customer unavailable' }} · {{ $order->service }}</p></div>@include('components.order-status', ['order' => $order])</div>
+<div class="page-heading"><div><a href="{{ route('staff.orders.index') }}" class="small d-inline-block mb-3">← Order queue</a><h1>Order <span class="reference fs-4">{{ $order->reference_no }}</span></h1></div>@include('components.order-status', ['order' => $order])</div>
 <div class="detail-grid">
     <div>
         <section class="surface mb-4">

@@ -54,7 +54,7 @@ class LaundryWorkflowTest extends TestCase
             'service' => 'Wash & Fold', 'laundry_style' => 'Regular Wash',
             'fabric_type' => 'Mixed', 'weight' => 2.5,
             'date' => '2026-11-08', 'time' => '09:00',
-            'additional_services' => ['Fabric Softener'],
+            'additional_services' => ['Scent Boost'],
         ], $overrides);
     }
 
@@ -85,19 +85,19 @@ class LaundryWorkflowTest extends TestCase
         $this->assertSame($owner->id, $order->user_id);
         $this->assertEquals(2.5, $order->weight);
         $this->assertSame('125.00', $order->total_price);
-        $this->assertSame('30.00', $order->additional_charges);
-        $this->assertEquals(155, $order->total_amount);
+        $this->assertSame('25.00', $order->additional_charges);
+        $this->assertEquals(150, $order->total_amount);
         $this->assertSame('pending', $order->payment_status);
         $this->assertNull($order->paid_at);
         $this->assertDatabaseHas('order_status_histories', ['order_id' => $order->id, 'status' => 'Pending', 'changed_by_type' => 'customer']);
-        $this->get(route('order.tracking', $order->reference_no))->assertOk()->assertSee('155.00')->assertSee('Awaiting pickup');
+        $this->get(route('order.tracking', $order->reference_no))->assertOk()->assertSee('150.00')->assertSee('Awaiting pickup');
     }
 
     public function test_invalid_service_dates_slots_and_duplicate_extras_do_not_create_orders(): void
     {
         $this->actingAs($this->customer())->post('/booking', $this->details([
             'service' => 'Unknown service', 'date' => '2026-11-06', 'time' => '03:00',
-            'additional_services' => ['Fabric Softener', 'Fabric Softener'],
+            'additional_services' => ['Scent Boost', 'Scent Boost'],
         ]))->assertSessionHasErrors(['service', 'date', 'time', 'additional_services.0']);
         $this->assertDatabaseCount('orders', 0);
     }
@@ -114,7 +114,7 @@ class LaundryWorkflowTest extends TestCase
         $this->actingAs($this->customer());
         Carbon::setTestNow('2026-11-07 10:00:00');
         $this->post('/booking', $this->details(['date' => '2026-11-07', 'time' => '09:00']))->assertSessionHasErrors('time');
-        $this->post('/booking', $this->details(['service' => 'Ironing', 'additional_services' => ['Ironing']]))->assertSessionHasErrors('additional_services');
+        $this->post('/booking', $this->details(['service' => 'Ironing', 'additional_services' => ['Ironing']]))->assertSessionHasErrors('additional_services.0');
         $this->assertDatabaseCount('orders', 0);
     }
 
@@ -142,7 +142,7 @@ class LaundryWorkflowTest extends TestCase
         $owner = $this->customer();
         $order = $this->order($owner);
         $this->actingAs($owner)->get(route('receipt.show', $order->id))
-            ->assertOk()->assertSee('155.00')->assertSee('Fabric Softener')->assertSee('Payment due');
+            ->assertOk()->assertSee('150.00')->assertSee('Scent Boost')->assertSee('Payment due');
     }
 
     public function test_shared_staff_queue_includes_customer_and_admin_orders(): void
@@ -173,9 +173,9 @@ class LaundryWorkflowTest extends TestCase
             'user_id' => $customer->id, 'payment_status' => 'pending',
         ]))->assertRedirect();
         $order = Order::sole();
-        $this->assertEquals(155, $order->total_amount);
+        $this->assertEquals(150, $order->total_amount);
         $this->assertSame('staff', $order->operator_type);
-        $this->get(route('staff.orders.show', $order->id))->assertOk()->assertSee('155.00')->assertSee('Confirm pickup');
+        $this->get(route('staff.orders.show', $order->id))->assertOk()->assertSee('150.00')->assertSee('Confirm pickup');
     }
 
     public function test_status_advances_in_order_and_rejects_a_stale_second_click(): void
@@ -244,9 +244,10 @@ class LaundryWorkflowTest extends TestCase
 
     public function test_main_customer_and_staff_pages_render(): void
     {
-        foreach (['/', '/login', '/register', '/staff/login'] as $path) $this->get($path)->assertOk();
+        foreach (['/', '/login', '/register'] as $path) $this->get($path)->assertOk();
         $this->actingAs($this->customer());
         foreach (['/', '/booking', '/settings', '/customer/orders/history'] as $path) $this->get($path)->assertOk();
+        $this->post('/logout')->assertRedirect(route('login.form'));
         $this->withSession(['staff_id' => $this->employee()->id]);
         foreach (['/staff/dashboard', '/staff/orders', '/staff/orders/create', '/staff/customers', '/staff/customers/create'] as $path) $this->get($path)->assertOk();
         $this->get('/staff/tasks')->assertRedirect(route('staff.orders.index'));

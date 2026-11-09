@@ -22,6 +22,8 @@ class Order extends Model
         'special_instructions',
         'additional_services',
         'additional_charges',
+        'laundry_products',
+        'product_charges',
         'weight',
         'date',
         'time',
@@ -42,6 +44,8 @@ class Order extends Model
         'total_price' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'additional_charges' => 'decimal:2',
+        'laundry_products' => 'array',
+        'product_charges' => 'decimal:2',
         'payment_details' => 'array',
         'additional_services' => 'array',
         'paid_at' => 'datetime',
@@ -100,7 +104,7 @@ class Order extends Model
 
     public function getTotalAmountAttribute()
     {
-        return $this->total_price + $this->additional_charges;
+        return round((float) $this->total_price + (float) $this->additional_charges + (float) ($this->product_charges ?? 0), 2);
     }
 
     public function getLaundryStylesListAttribute()
@@ -130,13 +134,6 @@ class Order extends Model
 
     public function getAdditionalServicesListAttribute()
     {
-        return [
-            'Stain Removal' => 50,
-            'Fabric Softener' => 30,
-            'Scent Boost' => 25,
-            'Express Service' => 100,
-            'Hang Dry' => 20,
-            'Ironing' => 40
-        ];
+        return \App\Support\LaundryWorkflow::EXTRAS;
     }
 }

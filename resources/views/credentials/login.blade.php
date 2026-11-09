@@ -6,7 +6,7 @@
     <section class="surface auth-card"><h2>Sign in</h2><p class="text-muted small mb-4" id="login-identity-help">Customers and administrators use a username. Employees use their staff email.</p>
         <form method="POST" action="{{ route('login') }}" data-single-submit>@csrf
             <div class="mb-3"><label class="form-label" for="username">Username or staff email</label><input class="form-control @error('username') is-invalid @enderror" id="username" name="username" value="{{ old('username') }}" maxlength="255" autocomplete="username" aria-describedby="login-identity-help" required autofocus></div>
-            <div class="mb-3"><label class="form-label" for="password">Password</label><div class="input-group"><input class="form-control" type="password" id="password" name="password" autocomplete="current-password" required><button class="btn btn-light" type="button" data-toggle-password="password" aria-pressed="false">Show</button></div></div>
+            <div class="mb-3"><label class="form-label" for="password">Password</label><div class="input-group"><input class="form-control" type="password" id="password" name="password" autocomplete="current-password" required><button class="btn btn-light w-auto" type="button" data-toggle-password="password" aria-pressed="false">Show</button></div></div>
             <label class="small d-flex gap-2 align-items-center mb-4"><input type="checkbox" class="form-check-input mt-0" name="remember" value="1" @checked(old('remember'))>Keep me signed in</label>
             <button class="btn btn-primary" type="submit">Sign in</button>
         </form>

@@ -35,7 +35,7 @@
             <div class="col-md-4">
                 <div class="card shadow">
                     <div class="card-body">
-                        <h5 class="card-title text-muted mb-3">Today's Revenue</h5>
+                        <h5 class="card-title text-muted mb-3">Booked today</h5>
                         <h2 class="mb-0">₱{{ number_format($todayRevenue, 2) }}</h2>
                         <small class="text-muted">Total revenue today</small>
                     </div>
