@@ -36,6 +36,8 @@ use App\Http\Middleware\AdminMiddleware;
 
 // Landing Page
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+Route::post('/laundry-assistant', \App\Http\Controllers\LaundryAssistantController::class)
+    ->middleware('throttle:laundry-assistant')->name('assistant.message');
 
 // Authentication Routes
 Route::middleware('guest:web,staff')->group(function () {

@@ -6,12 +6,17 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Overview') · Waku-Waku Admin</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
+    <script>
+        try { document.documentElement.dataset.adminNavMode = localStorage.getItem('waku-admin-navigation-mode') === 'sidebar' ? 'sidebar' : 'radial'; }
+        catch { document.documentElement.dataset.adminNavMode = 'radial'; }
+    </script>
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
     <link href="{{ asset('vendor/fontawesome/css/all.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/laundryhub.css') }}" rel="stylesheet">
     <link href="{{ asset('css/admin-workspace.css') }}" rel="stylesheet">
     <link href="{{ asset('css/admin-navigation.css') }}?v={{ filemtime(public_path('css/admin-navigation.css')) }}" rel="stylesheet">
+    <link href="{{ asset('css/admin-navigation-modes.css') }}?v={{ filemtime(public_path('css/admin-navigation-modes.css')) }}" rel="stylesheet">
     @stack('styles')
 </head>
 <body class="admin-shell admin-radial-shell">
@@ -28,6 +33,7 @@
     @include('admin.settings.modal')
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('js/laundryhub.js') }}?v={{ filemtime(public_path('js/laundryhub.js')) }}" defer></script>
+    <script src="{{ asset('js/admin-navigation.js') }}?v={{ filemtime(public_path('js/admin-navigation.js')) }}" defer></script>
     <script src="{{ asset('js/admin-workspace.js') }}?v={{ filemtime(public_path('js/admin-workspace.js')) }}" defer></script>
     @stack('scripts')
     @yield('scripts')

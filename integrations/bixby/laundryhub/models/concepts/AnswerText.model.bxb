@@ -1,0 +1,3 @@
+text (AnswerText) {
+  description (The current Laundryhub guide answer.)
+}

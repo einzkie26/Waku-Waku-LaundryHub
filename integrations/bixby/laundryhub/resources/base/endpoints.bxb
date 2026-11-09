@@ -1,0 +1,8 @@
+endpoints {
+  action-endpoints {
+    action-endpoint (ReadLaundryGuide) {
+      accepted-inputs (topic)
+      local-endpoint ("ReadLaundryGuide.js")
+    }
+  }
+}

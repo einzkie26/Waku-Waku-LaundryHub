@@ -2,10 +2,12 @@
 
 @push('styles')
     <link href="{{ asset('css/hero-laundry.css') }}?v={{ filemtime(public_path('css/hero-laundry.css')) }}" rel="stylesheet">
+    <link href="{{ asset('css/laundry-assistant.css') }}?v={{ filemtime(public_path('css/laundry-assistant.css')) }}" rel="stylesheet">
 @endpush
 
 @push('scripts')
     <script src="{{ asset('js/hero-laundry.js') }}?v={{ filemtime(public_path('js/hero-laundry.js')) }}" defer></script>
+    <script src="{{ asset('js/laundry-assistant.js') }}?v={{ filemtime(public_path('js/laundry-assistant.js')) }}" defer></script>
 @endpush
 
 @section('content')
@@ -20,6 +22,7 @@
                 <h4 class="hero-or">or</h4>
                 <a href="{{ auth('staff')->check() ? route('staff.orders.index') : (auth()->check() ? route('customer.orders.history') : '#services') }}" class="btn btn-light" data-hero-machine="spin">{{ auth('staff')->check() ? 'View order queue' : (auth()->check() ? 'Track my laundry' : 'Spin and wash your clothes') }}</a>
             </div>
+            <button class="hero-chat-link" type="button" data-chat-open aria-haspopup="dialog" aria-controls="laundry-chat-panel" aria-expanded="false"><i class="bi bi-stars" aria-hidden="true"></i>Have a laundry question? Ask Waku</button>
         </div>
         <div class="hero-art" role="img" aria-label="A Waku-Waku washing machine with clothes and water behind its glass door" data-washer data-machine-mode="idle">
             <div class="art-tag art-tag-top"><i class="bi bi-stars me-2" aria-hidden="true"></i>A fresh start for your clothes</div>
@@ -89,4 +92,5 @@
         </div>
     </div>
 </section>
+@include('partials.laundry-assistant')
 @endsection

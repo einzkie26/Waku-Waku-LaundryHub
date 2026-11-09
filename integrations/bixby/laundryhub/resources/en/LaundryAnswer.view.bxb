@@ -1,0 +1,20 @@
+result-view {
+  match: LaundryAnswer (this)
+  message {
+    template ("#{value(this.answer)}")
+  }
+  render {
+    layout {
+      section {
+        title {
+          template ("#{value(this.title)}")
+        }
+        content {
+          paragraph {
+            value ("#{value(this.answer)}")
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+action (ReadLaundryGuide) {
+  description (Explain a laundry topic using the current shop guide.)
+  type (Search)
+  collect {
+    input (topic) {
+      type (LaundryTopic)
+      min (Required)
+      max (One)
+    }
+  }
+  output (LaundryAnswer)
+}

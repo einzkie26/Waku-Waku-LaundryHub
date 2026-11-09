@@ -1,0 +1,40 @@
+[g:LaundryAnswer,r:ReadLaundryGuide] How do I (book a pickup)[v:LaundryTopic:Booking]?
+[g:LaundryAnswer,r:ReadLaundryGuide] Tell me about (booking)[v:LaundryTopic:Booking]
+[g:LaundryAnswer,r:ReadLaundryGuide] Explain the laundry (process)[v:LaundryTopic:Process]
+[g:LaundryAnswer,r:ReadLaundryGuide] Tell me (how it works)[v:LaundryTopic:Process]
+[g:LaundryAnswer,r:ReadLaundryGuide] What are the laundry (prices)[v:LaundryTopic:Prices]?
+[g:LaundryAnswer,r:ReadLaundryGuide] Tell me the (rates)[v:LaundryTopic:Prices]
+[g:LaundryAnswer,r:ReadLaundryGuide] Which (detergent brands)[v:LaundryTopic:Products] can I choose?
+[g:LaundryAnswer,r:ReadLaundryGuide] How are (sachets)[v:LaundryTopic:Products] priced?
+[g:LaundryAnswer,r:ReadLaundryGuide] How is (fabric softener)[v:LaundryTopic:Softener] measured?
+[g:LaundryAnswer,r:ReadLaundryGuide] Tell me about (softener cups)[v:LaundryTopic:Softener]
+[g:LaundryAnswer,r:ReadLaundryGuide] Which (extras)[v:LaundryTopic:Extras] are available?
+[g:LaundryAnswer,r:ReadLaundryGuide] How much is (packaging)[v:LaundryTopic:Extras]?
+[g:LaundryAnswer,r:ReadLaundryGuide] How do I (track my laundry)[v:LaundryTopic:Tracking]?
+[g:LaundryAnswer,r:ReadLaundryGuide] Explain (order status)[v:LaundryTopic:Tracking]
+[g:LaundryAnswer,r:ReadLaundryGuide] Which (pickup times)[v:LaundryTopic:PickupTimes] can I choose?
+[g:LaundryAnswer,r:ReadLaundryGuide] What (time slots)[v:LaundryTopic:PickupTimes] are available?
+[g:LaundryAnswer,r:ReadLaundryGuide] What is the (turnaround)[v:LaundryTopic:Turnaround]?
+[g:LaundryAnswer,r:ReadLaundryGuide] Explain (express service)[v:LaundryTopic:Turnaround]
+[g:LaundryAnswer,r:ReadLaundryGuide] How does (payment)[v:LaundryTopic:Payment] work?
+[g:LaundryAnswer,r:ReadLaundryGuide] Can I pay with (GCash)[v:LaundryTopic:Payment]?
+[g:LaundryAnswer,r:ReadLaundryGuide] How do I (reschedule)[v:LaundryTopic:Changes]?
+[g:LaundryAnswer,r:ReadLaundryGuide] What should I know about (refunds)[v:LaundryTopic:Changes]?
+[g:LaundryAnswer,r:ReadLaundryGuide] Do I need an (account)[v:LaundryTopic:Account]?
+[g:LaundryAnswer,r:ReadLaundryGuide] How do I (sign in)[v:LaundryTopic:Account]?
+[g:LaundryAnswer,r:ReadLaundryGuide] How do I (prepare my laundry)[v:LaundryTopic:Preparation]?
+[g:LaundryAnswer,r:ReadLaundryGuide] Explain (pickup preparation)[v:LaundryTopic:Preparation]
+[g:LaundryAnswer,r:ReadLaundryGuide] How do I handle (delicates)[v:LaundryTopic:Delicates]?
+[g:LaundryAnswer,r:ReadLaundryGuide] Tell me about (dry cleaning)[v:LaundryTopic:Delicates]
+[g:LaundryAnswer,r:ReadLaundryGuide] What should I do about (stains)[v:LaundryTopic:Stains]?
+[g:LaundryAnswer,r:ReadLaundryGuide] Explain (stain removal)[v:LaundryTopic:Stains]
+[g:LaundryAnswer,r:ReadLaundryGuide] How do I (sort my laundry)[v:LaundryTopic:Sorting]?
+[g:LaundryAnswer,r:ReadLaundryGuide] Explain laundry (sorting)[v:LaundryTopic:Sorting]
+[g:LaundryAnswer,r:ReadLaundryGuide] What do (care labels)[v:LaundryTopic:CareLabels] mean?
+[g:LaundryAnswer,r:ReadLaundryGuide] Explain (laundry symbols)[v:LaundryTopic:CareLabels]
+[g:LaundryAnswer,r:ReadLaundryGuide] What should I know about (drying)[v:LaundryTopic:Drying]?
+[g:LaundryAnswer,r:ReadLaundryGuide] How do I avoid (shrinkage)[v:LaundryTopic:Drying]?
+[g:LaundryAnswer,r:ReadLaundryGuide] Explain (detergent dosing)[v:LaundryTopic:DetergentDose]
+[g:LaundryAnswer,r:ReadLaundryGuide] (How much detergent)[v:LaundryTopic:DetergentDose] should I use?
+[g:LaundryAnswer,r:ReadLaundryGuide] What are the (opening hours)[v:LaundryTopic:Contact]?
+[g:LaundryAnswer,r:ReadLaundryGuide] Tell me the (shop contact details)[v:LaundryTopic:Contact]

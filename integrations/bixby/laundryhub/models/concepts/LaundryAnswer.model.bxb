@@ -1,0 +1,13 @@
+structure (LaundryAnswer) {
+  description (An answer from the Laundryhub shop guide.)
+  property (title) {
+    type (AnswerTitle)
+    min (Required)
+    max (One)
+  }
+  property (answer) {
+    type (AnswerText)
+    min (Required)
+    max (One)
+  }
+}

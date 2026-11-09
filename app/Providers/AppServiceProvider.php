@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\StaffAuth;
-use Illuminate\Support\Facades\View;
 use App\Models\Employee;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +27,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        RateLimiter::for('laundry-assistant', fn ($request) => [
+            Limit::perMinute(12)->by('assistant:'.$request->ip()),
+            Limit::perDay(150)->by('assistant-day:'.$request->ip()),
+        ]);
+        RateLimiter::for('laundry-bixby', fn ($request) => [
+            Limit::perMinute(60)->by('bixby:'.$request->ip()),
+            Limit::perDay(2000)->by('bixby-day:'.$request->ip()),
+        ]);
         \Illuminate\Support\Facades\Blade::anonymousComponentPath(resource_path('views/admin/components'));
         //
         Route::middlewareGroup('staff.auth', [StaffAuth::class]);

@@ -1,0 +1,22 @@
+vocab (LaundryTopic) {
+  "Booking" { "booking" "book a pickup" "schedule a pickup" }
+  "Process" { "process" "how it works" "laundry steps" }
+  "Prices" { "prices" "pricing" "cost" "rates" }
+  "Products" { "detergent" "detergents" "detergent brands" "sachets" }
+  "Softener" { "fabric softener" "softener" "softener cups" }
+  "Extras" { "extras" "packaging" "scent boost" "hang dry" }
+  "Tracking" { "tracking" "track my laundry" "order status" }
+  "PickupTimes" { "pickup times" "time slots" }
+  "Turnaround" { "turnaround" "delivery time" "express service" }
+  "Payment" { "payment" "payments" "GCash" }
+  "Changes" { "reschedule" "cancellation" "refunds" }
+  "Account" { "account" "sign in" "registration" }
+  "Preparation" { "pickup preparation" "prepare my laundry" }
+  "Delicates" { "delicates" "silk" "wool" "dry cleaning" }
+  "Stains" { "stains" "stain removal" }
+  "Sorting" { "sorting" "sort my laundry" }
+  "CareLabels" { "care labels" "laundry symbols" }
+  "Drying" { "drying" "shrinkage" }
+  "DetergentDose" { "detergent dosing" "how much detergent" }
+  "Contact" { "shop contact details" "opening hours" "shop location" }
+}

@@ -1,0 +1,11 @@
+capsule {
+  id (example.laundryhub)
+  format (3)
+  version (0.1.0)
+  targets {
+    target (bixby-mobile-en-US)
+  }
+  runtime-version (9) {
+    js-runtime-version (2)
+  }
+}

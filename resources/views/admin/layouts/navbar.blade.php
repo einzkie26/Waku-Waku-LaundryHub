@@ -1,5 +1,6 @@
 <header class="admin-topbar">
     <div class="d-flex align-items-center gap-3">
+        <button class="admin-sidebar-open-button" id="admin-sidebar-toggle" type="button" aria-controls="admin-sidebar" aria-expanded="false" aria-label="Open sidebar"><i class="bi bi-list" aria-hidden="true"></i></button>
         <nav aria-label="Breadcrumb" class="admin-breadcrumb"><a href="{{ route('admin.dashboard') }}">Workspace</a><i class="bi bi-chevron-right" aria-hidden="true"></i><span aria-current="page">@yield('title', 'Overview')</span></nav>
     </div>
     <div class="admin-topbar-actions">
