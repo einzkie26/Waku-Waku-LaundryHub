@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use App\Models\Employee;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class StaffAuth
 {
@@ -19,43 +19,21 @@ class StaffAuth
      */
     public function handle(Request $request, Closure $next)
     {
-        Log::info('StaffAuth middleware check', [
-            'has_staff_id' => Session::has('staff_id'),
-            'staff_id' => Session::get('staff_id'),
-            'url' => $request->url()
-        ]);
-
-        if (!Session::has('staff_id')) {
-            Log::warning('No staff session found', [
-                'url' => $request->url(),
-                'ip' => $request->ip()
-            ]);
-
+        $guard = Auth::guard('staff');
+        $staffId = $guard->id() ?? Session::get('staff_id');
+        $employee = !Auth::guard('web')->check() && $staffId ? Employee::find($staffId) : null;
+        if (!$employee || !$employee->is_active || strtolower($employee->status) !== 'active') {
+            $guard->logout();
+            Session::forget(['staff_id', 'remember_staff']);
             if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(['message' => 'Unauthorized.'], 401);
+                return response()->json(['message' => 'Please sign in with an active staff account.'], 401);
             }
-            
-            return redirect()->route('staff.login.form')
-                ->with('error', 'Please log in to access the staff portal.');
-        }
-        
-        // Verify the employee still exists and is active
-        $employee = Employee::where('id', Session::get('staff_id'))
-                          ->whereRaw('LOWER(status) = ?', ['active'])
-                          ->first();
-                          
-        if (!$employee) {
-            Log::warning('Invalid staff session', [
-                'staff_id' => Session::get('staff_id'),
-                'reason' => 'Employee not found or inactive'
-            ]);
 
-            Session::forget('staff_id');
-            return redirect()->route('staff.login.form')
-                ->with('error', 'Your session has expired. Please log in again.');
+            return redirect()->route('login.form')->with('error', 'Please sign in with an active staff account.');
         }
-        
-        // Add staff user to the request for easy access in controllers
+        // Keep existing employee sessions and staff workflows compatible with the shared login.
+        if (!$guard->check()) $guard->login($employee);
+        Session::put('staff_id', $employee->id);
         $request->attributes->add(['staff' => $employee]);
         
         return $next($request);

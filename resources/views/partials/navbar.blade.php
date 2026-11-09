@@ -14,6 +14,10 @@
                     @auth<li class="nav-item"><a class="nav-link {{ request()->routeIs('customer.orders.history', 'order.tracking') ? 'active' : '' }}" href="{{ route('customer.orders.history') }}">My orders</a></li>@endauth
                 </ul>
                 <div class="d-flex gap-2 align-items-center">
+                    @if(auth('staff')->check())
+                        <a class="btn btn-light" href="{{ route('staff.dashboard') }}">Staff workspace</a>
+                        <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-light" type="submit">Sign out</button></form>
+                    @else
                     @auth
                         <div class="dropdown">
                             <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account options">{{ explode(' ', auth()->user()->name)[0] }}</button>
@@ -26,7 +30,8 @@
                     @else
                         <a class="btn btn-light" href="{{ route('login.form') }}">Sign in</a>
                     @endauth
-                    <a class="btn btn-primary" href="{{ route('booking.create') }}">Book a pickup <i class="bi bi-arrow-up-right ms-1" aria-hidden="true"></i></a>
+                    @endif
+                    <a class="btn btn-primary" href="{{ auth('staff')->check() ? route('staff.orders.create') : route('booking.create') }}">{{ auth('staff')->check() ? 'New order' : 'Book a pickup' }} <i class="bi bi-arrow-up-right ms-1" aria-hidden="true"></i></a>
                 </div>
             </div>
         </div>

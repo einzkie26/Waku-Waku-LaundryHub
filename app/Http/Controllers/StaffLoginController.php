@@ -23,71 +23,12 @@ class StaffLoginController extends Controller
 {
     public function showLoginForm()
     {
-        return view('staff.login');
+        return redirect()->route('login.form');
     }
 
     public function login(Request $request)
     {
-        try {
-            $request->validate([
-                'email' => 'required|email',
-                'password' => 'required|string',
-            ]);
-
-            Log::info('Staff login attempt', ['email' => $request->email]);
-
-            $employee = Employee::where('email', $request->email)->first();
-
-            if (!$employee || !Hash::check($request->password, $employee->password)) {
-                Log::warning('Failed staff login attempt', [
-                    'email' => $request->email,
-                    'reason' => 'Invalid credentials'
-                ]);
-                return back()
-                    ->withInput()
-                    ->withErrors([
-                        'email' => 'Invalid email or password.',
-                    ]);
-            }
-
-            if (strtolower($employee->status) !== 'active') {
-                Log::warning('Inactive staff login attempt', [
-                    'employee_id' => $employee->id,
-                    'name' => $employee->name,
-                    'status' => $employee->status
-                ]);
-                return back()
-                    ->withInput()
-                    ->with('error', 'Your account is inactive. Please contact the administrator.');
-            }
-
-            // Successful login
-            Session::forget('staff_id');
-            Session::put('staff_id', $employee->id);
-            $request->session()->regenerate();
-            
-            if ($request->filled('remember')) {
-                Session::put('remember_staff', true);
-            }
-
-            Log::info('Staff login successful', [
-                'employee_id' => $employee->id,
-                'name' => $employee->name
-            ]);
-            return redirect()->route('staff.dashboard')
-                           ->with('success', 'Welcome back, ' . $employee->name);
-        } catch (\Exception $e) {
-            Log::error('Staff login error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'email' => 'An error occurred during login. Please try again.',
-                ]);
-        }
+        return app(LoginController::class)->login($request);
     }
 
     public function dashboard()
@@ -109,7 +50,7 @@ class StaffLoginController extends Controller
     {
         $staffId = Session::get('staff_id');
         if (!$staffId) {
-            return redirect()->route('staff.login.form')
+            return redirect()->route('login.form')
                            ->with('error', 'Please login to access tasks.');
         }
 
@@ -128,7 +69,7 @@ class StaffLoginController extends Controller
         $staffId = Session::get('staff_id');
         if (!$staffId) {
             \Log::warning('No staff_id in session!');
-            return redirect()->route('staff.login.form')->with('error', 'Unauthorized');
+            return redirect()->route('login.form')->with('error', 'Unauthorized');
         }
 
         $validated = $request->validate([
@@ -250,7 +191,7 @@ class StaffLoginController extends Controller
     {
         $staffId = Session::get('staff_id');
         if (!$staffId) {
-            return redirect()->route('staff.login.form')
+            return redirect()->route('login.form')
                            ->with('error', 'Please login to view profile.');
         }
 
@@ -262,7 +203,7 @@ class StaffLoginController extends Controller
     {
         $staffId = Session::get('staff_id');
         if (!$staffId) {
-            return redirect()->route('staff.login.form')
+            return redirect()->route('login.form')
                            ->with('error', 'Please login to access attendance.');
         }
 
@@ -381,21 +322,14 @@ class StaffLoginController extends Controller
 
     public function logout(Request $request)
     {
-        Session::forget('staff_id');
-        
-        $request->session()->invalidate();
-        
-        $request->session()->regenerateToken();
-        
-        return redirect()->route('staff.login.form')
-                        ->with('success', 'You have been successfully logged out.');
+        return app(LogoutController::class)->logout($request);
     }
 
     public function history()
     {
         $staffId = Session::get('staff_id');
         if (!$staffId) {
-            return redirect()->route('staff.login.form')
+            return redirect()->route('login.form')
                            ->with('error', 'Please login to view history.');
         }
 
@@ -560,7 +494,7 @@ class StaffLoginController extends Controller
     {
         $staffId = Session::get('staff_id');
         if (!$staffId) {
-            return redirect()->route('staff.login.form')
+            return redirect()->route('login.form')
                            ->with('error', 'Please login to view reports.');
         }
 
@@ -589,7 +523,7 @@ class StaffLoginController extends Controller
     {
         $staffId = Session::get('staff_id');
         if (!$staffId) {
-            return redirect()->route('staff.login.form')
+            return redirect()->route('login.form')
                            ->with('error', 'Please login to view daily report.');
         }
 
@@ -628,7 +562,7 @@ class StaffLoginController extends Controller
     {
         $staffId = Session::get('staff_id');
         if (!$staffId) {
-            return redirect()->route('staff.login.form')
+            return redirect()->route('login.form')
                            ->with('error', 'Please login to view monthly report.');
         }
 
@@ -656,7 +590,7 @@ class StaffLoginController extends Controller
     {
         $staffId = Session::get('staff_id');
         if (!$staffId) {
-            return redirect()->route('staff.login.form')
+            return redirect()->route('login.form')
                            ->with('error', 'Please login to view performance report.');
         }
 
@@ -704,7 +638,7 @@ class StaffLoginController extends Controller
     {
         $staffId = Session::get('staff_id');
         if (!$staffId) {
-            return redirect()->route('staff.login.form')
+            return redirect()->route('login.form')
                            ->with('error', 'Please login to view notifications.');
         }
 

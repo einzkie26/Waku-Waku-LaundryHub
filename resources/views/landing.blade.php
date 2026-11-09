@@ -16,9 +16,9 @@
             <h1>A little less laundry.<br>A little <em>more life.</em></h1>
             <p class="hero-description">Leave the laundry to us. Book your pickup, follow its progress, and get back to the things you love.</p>
             <div class="hero-actions">
-                <a href="{{ route('booking.create') }}" class="btn btn-primary" data-hero-machine="wash">Book a pickup <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i></a>
+                <a href="{{ auth('staff')->check() ? route('staff.orders.create') : route('booking.create') }}" class="btn btn-primary" data-hero-machine="wash">{{ auth('staff')->check() ? 'New order' : 'Book a pickup' }} <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i></a>
                 <h4 class="hero-or">or</h4>
-                <a href="{{ auth()->check() ? route('customer.orders.history') : '#services' }}" class="btn btn-light" data-hero-machine="spin">{{ auth()->check() ? 'Track my laundry' : 'Spin and wash your clothes' }}</a>
+                <a href="{{ auth('staff')->check() ? route('staff.orders.index') : (auth()->check() ? route('customer.orders.history') : '#services') }}" class="btn btn-light" data-hero-machine="spin">{{ auth('staff')->check() ? 'View order queue' : (auth()->check() ? 'Track my laundry' : 'Spin and wash your clothes') }}</a>
             </div>
         </div>
         <div class="hero-art" role="img" aria-label="A Waku-Waku washing machine with clothes and water behind its glass door" data-washer data-machine-mode="idle">

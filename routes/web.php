@@ -44,7 +44,7 @@ Route::get('/check-employees', function() {
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 
 // Authentication Routes
-Route::middleware('guest')->group(function () {
+Route::middleware('guest:web,staff')->group(function () {
     // Customer Authentication
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login.form');
     Route::post('/login', [LoginController::class, 'login'])->name('login');
@@ -53,9 +53,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [RegisterController::class, 'register'])->name('register');
 
     // Staff Authentication
-    Route::get('/staff/login', [StaffLoginController::class, 'showLoginForm'])->name('staff.login.form');
-    Route::post('/staff/login', [StaffLoginController::class, 'login'])->name('staff.login');
+    Route::get('/staff/login', fn () => redirect()->route('login.form'))->name('staff.login.form');
+    Route::post('/staff/login', [LoginController::class, 'login'])->name('staff.login');
 });
+
+Route::post('/logout', [LogoutController::class, 'logout'])->middleware('auth:web,staff')->name('logout');
 
 // Order Tracking (Public)
 Route::get('/order-tracking/{reference}', [OrderController::class, 'orderTracking'])
@@ -71,7 +73,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/booking', [CustomerBookingController::class, 'create'])->name('booking.create');
     Route::post('/booking', [CustomerBookingController::class, 'store'])->name('booking.store');
     // Logout
-    Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
     // User Profile
     Route::get('/settings', function () {

@@ -13,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias(['staff.auth' => \App\Http\Middleware\StaffAuth::class]);
         $middleware->redirectGuestsTo(fn () => route('login.form'));
-        $middleware->redirectUsersTo(fn () => auth()->user()?->role === 'admin' ? route('admin.dashboard') : route('landing'));
+        $middleware->redirectUsersTo(fn () => auth('staff')->check() ? route('staff.dashboard')
+            : (auth('web')->user()?->role === 'admin' ? route('admin.dashboard') : route('landing')));
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
