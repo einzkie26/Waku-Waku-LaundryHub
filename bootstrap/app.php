@@ -18,5 +18,5 @@ return Application::configure(basePath: dirname(__DIR__))
             : (auth('web')->user()?->role === 'admin' ? route('admin.dashboard') : route('landing')));
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->dontFlash(['new_password', 'new_password_confirmation']);
     })->create();

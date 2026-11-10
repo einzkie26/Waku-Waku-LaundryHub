@@ -1,0 +1,1 @@
+<button class="notification-bell {{ $notificationBellClass ?? '' }}" type="button" data-open-notifications aria-haspopup="dialog" aria-controls="{{ ($notificationRole ?? auth('web')->user()->role).'-notifications' }}" aria-label="Notifications"><i class="bi bi-bell" aria-hidden="true"></i><span class="notification-unread" data-notification-unread hidden>0</span></button>

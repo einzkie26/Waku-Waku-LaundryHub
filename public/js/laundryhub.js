@@ -16,24 +16,6 @@
         updatePayment(form);
     });
 
-    const sidebar = document.querySelector('.staff-sidebar');
-    const toggle = document.getElementById('sidebarToggle');
-    const backdrop = document.querySelector('.sidebar-backdrop');
-    const setSidebar = open => {
-        if (!sidebar || !toggle) return;
-        sidebar.classList.toggle('show', open);
-        backdrop?.classList.toggle('show', open);
-        toggle.setAttribute('aria-expanded', String(open));
-        document.body.style.overflow = open ? 'hidden' : '';
-        if (open) sidebar.querySelector('[data-close-sidebar]')?.focus();
-        else toggle.focus();
-    };
-    toggle?.addEventListener('click', () => setSidebar(!sidebar.classList.contains('show')));
-    backdrop?.addEventListener('click', () => setSidebar(false));
-    document.querySelector('[data-close-sidebar]')?.addEventListener('click', () => setSidebar(false));
-    document.addEventListener('keydown', event => { if (event.key === 'Escape' && sidebar?.classList.contains('show')) setSidebar(false); });
-    window.addEventListener('resize', () => { if (window.innerWidth >= 992 && sidebar?.classList.contains('show')) setSidebar(false); });
-
     document.querySelectorAll('form[data-single-submit]').forEach(form => {
         form.addEventListener('submit', event => {
             if (form.dataset.submitting) { event.preventDefault(); return; }

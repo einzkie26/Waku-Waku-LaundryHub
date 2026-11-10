@@ -7,7 +7,7 @@
         <div class="laundry-chat-shell">
             <header class="laundry-chat-header">
                 <span class="laundry-chat-header-logo"><img src="{{ asset('img/logo.png') }}" width="34" height="34" alt=""></span>
-                <div><h2 id="laundry-chat-title">Ask Waku <i class="bi bi-stars" aria-hidden="true"></i></h2><p id="laundry-chat-description"><span></span>{{ filled(config('laundry-assistant.openai_key')) ? 'AI laundry assistant' : 'Your Laundryhub guide' }}</p></div>
+                <div><h2 id="laundry-chat-title">Ask Waku <i class="bi bi-stars" aria-hidden="true"></i></h2><p id="laundry-chat-description"><span></span>{{ config('laundry-assistant.openai_enabled', false) && filled(config('laundry-assistant.openai_key')) ? 'AI laundry assistant' : 'Your Laundryhub guide' }}</p></div>
                 <div class="laundry-chat-header-actions"><button type="button" data-chat-reset aria-label="Start a new chat" title="Start a new chat" disabled><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></button><button type="button" data-chat-close aria-label="Close laundry assistant"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
             </header>
             <div class="laundry-chat-messages" data-chat-log role="log" aria-label="Conversation with Waku" aria-live="polite" aria-relevant="additions text" tabindex="0">

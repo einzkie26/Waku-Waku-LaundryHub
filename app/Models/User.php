@@ -65,4 +65,8 @@ class User extends Authenticatable
         return $this->hasMany(UserLog::class);
     }
 
+    public function laundryNotifications(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Notification::class, 'notifiable');
+    }
 }

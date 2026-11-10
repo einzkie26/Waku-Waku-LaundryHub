@@ -27,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \App\Models\Order::observe(\App\Observers\LaundryOrderObserver::class);
         RateLimiter::for('laundry-assistant', fn ($request) => [
             Limit::perMinute(12)->by('assistant:'.$request->ip()),
             Limit::perDay(150)->by('assistant-day:'.$request->ip()),

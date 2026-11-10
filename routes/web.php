@@ -66,6 +66,11 @@ Route::get('/order-tracking/{reference}', [OrderController::class, 'orderTrackin
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
+    Route::prefix('customer/notifications')->name('customer.notifications.')->middleware('auth:web')->group(function () {
+        Route::get('/', [\App\Http\Controllers\UserNotificationController::class, 'index'])->name('index');
+        Route::post('/read-all', [\App\Http\Controllers\UserNotificationController::class, 'readAll'])->name('read-all');
+        Route::post('/{notification}/read', [\App\Http\Controllers\UserNotificationController::class, 'read'])->whereNumber('notification')->name('read');
+    });
     Route::get('/booking', [CustomerBookingController::class, 'create'])->name('booking.create');
     Route::post('/booking', [CustomerBookingController::class, 'store'])->name('booking.store');
     // Logout
@@ -94,6 +99,11 @@ Route::middleware('auth')->group(function () {
 Route::prefix('admin')
     ->middleware(['auth', AdminMiddleware::class])
     ->group(function () {
+        Route::prefix('notifications')->name('admin.notifications.')->middleware('auth:web')->group(function () {
+            Route::get('/', [\App\Http\Controllers\UserNotificationController::class, 'index'])->name('index');
+            Route::post('/read-all', [\App\Http\Controllers\UserNotificationController::class, 'readAll'])->name('read-all');
+            Route::post('/{notification}/read', [\App\Http\Controllers\UserNotificationController::class, 'read'])->whereNumber('notification')->name('read');
+        });
         // Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
@@ -156,7 +166,11 @@ Route::prefix('admin')
 Route::middleware(['staff.auth'])->prefix('staff')->name('staff.')->group(function () {
     Route::get('/dashboard', [StaffLoginController::class, 'dashboard'])->name('dashboard');
     Route::get('/profile', [StaffProfileController::class, 'show'])->name('profile');
+    Route::get('/profile/photo', [StaffProfileController::class, 'photo'])->name('profile.photo');
     Route::post('/profile/update', [StaffProfileController::class, 'update'])->name('profile.update');
+    Route::get('/notifications', [\App\Http\Controllers\Staff\StaffNotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\Staff\StaffNotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::post('/notifications/{notification}/read', [\App\Http\Controllers\Staff\StaffNotificationController::class, 'read'])->whereNumber('notification')->name('notifications.read');
     Route::get('/attendance', [StaffLoginController::class, 'attendance'])->name('attendance');
     Route::post('/attendance/mark', [StaffLoginController::class, 'markAttendance'])->name('attendance.mark');
     Route::get('/history', [StaffLoginController::class, 'history'])->name('history');

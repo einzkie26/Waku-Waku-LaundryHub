@@ -11,6 +11,7 @@
     <link href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
     <link href="{{ asset('vendor/fontawesome/css/all.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/laundryhub.css') }}" rel="stylesheet">
+    @auth('web')<link href="{{ asset('css/laundry-notifications.css') }}?v={{ filemtime(public_path('css/laundry-notifications.css')) }}" rel="stylesheet">@endauth
     @stack('styles')
 </head>
 <body>
@@ -21,8 +22,10 @@
         @yield('content')
     </main>
     @include('partials.footer')
+    @auth('web')@include('partials.notifications')@endauth
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('js/laundryhub.js') }}?v={{ filemtime(public_path('js/laundryhub.js')) }}" defer></script>
+    @auth('web')<script src="{{ asset('js/laundry-notifications.js') }}?v={{ filemtime(public_path('js/laundry-notifications.js')) }}" defer></script>@endauth
     @stack('scripts')
 </body>
 </html>

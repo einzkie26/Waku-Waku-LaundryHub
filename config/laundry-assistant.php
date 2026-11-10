@@ -1,6 +1,8 @@
 <?php
 
 return [
+    // The built-in FAQ assistant is free. Paid AI requires an explicit opt-in.
+    'openai_enabled' => (bool) env('LAUNDRY_ASSISTANT_OPENAI_ENABLED', false),
     'openai_key' => env('OPENAI_API_KEY'),
     'model' => env('OPENAI_MODEL', 'gpt-4.1-mini'),
     'timeout' => 20,

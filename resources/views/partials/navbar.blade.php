@@ -5,6 +5,7 @@
                 <img src="{{ asset('img/logo.png') }}" alt="" width="48" height="48">
                 <span class="brand-name">waku-waku<small>Laundryhub</small></span>
             </a>
+            @auth('web')@include('partials.notification-bell', ['notificationBellClass' => 'd-lg-none ms-auto me-2'])@endauth
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#customer-navigation" aria-controls="customer-navigation" aria-expanded="false" aria-label="Open navigation"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="customer-navigation">
                 <ul class="navbar-nav mx-auto">
@@ -19,6 +20,7 @@
                         <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-light" type="submit">Sign out</button></form>
                     @else
                     @auth
+                        @include('partials.notification-bell', ['notificationBellClass' => 'd-none d-lg-grid'])
                         <div class="dropdown">
                             <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account options">{{ explode(' ', auth()->user()->name)[0] }}</button>
                             <ul class="dropdown-menu dropdown-menu-end">

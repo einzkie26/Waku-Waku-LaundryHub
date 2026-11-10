@@ -1,282 +1,51 @@
 @extends('layouts.staff-app')
-
-@section('title', 'Profile')
-
-@push('styles')
-<style>
-    .profile-header {
-        background: #fff;
-        padding: 1.5rem;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        margin-bottom: 1.5rem;
-    }
-    
-    .profile-card {
-        border: none;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        border-radius: 10px;
-    }
-    
-    .profile-avatar {
-        width: 120px;
-        height: 120px;
-        background: #f8f9fa;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1rem;
-    }
-    
-    .profile-avatar i {
-        font-size: 4rem;
-        color: #6c757d;
-    }
-    
-    .form-control:read-only {
-        background-color: #f8f9fa;
-    }
-    
-    .password-section {
-        border-top: 1px solid #eee;
-        margin-top: 2rem;
-        padding-top: 2rem;
-    }
-</style>
-@endpush
-
+@section('title', 'My profile')
 @section('content')
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="profile-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h2 class="text-dark mb-1">Profile</h2>
-                <p class="text-muted mb-0">Manage your account settings and preferences</p>
-            </div>
-            <span class="text-muted">{{ now()->format('M d, Y') }}</span>
-        </div>
-    </div>
-
-    <!-- Profile Card -->
-    <div class="card profile-card">
-        <div class="card-body">
-            <form id="profileForm">
-                <div class="row">
-                    <div class="col-md-4 text-center">
-                        <div class="profile-avatar">
-                            <i class="fas fa-user-circle"></i>
-                        </div>
-                        <h4>{{ $employee->name }}</h4>
-                        <p class="text-muted">{{ $employee->role }}</p>
+<div class="staff-profile-page">
+    <div class="page-heading"><div><div class="eyebrow">Your account</div><h1>My profile</h1></div><span class="staff-profile-status">{{ $employee->status }}</span></div>
+    <form action="{{ route('staff.profile.update') }}" method="POST" enctype="multipart/form-data" data-staff-profile data-single-submit>
+        @csrf
+        <div class="staff-profile-grid">
+            <aside class="staff-identity-card" aria-label="Profile photo and work details">
+                <div class="staff-identity-cover" aria-hidden="true"><svg viewBox="0 0 58 70" fill="none"><rect x="3" y="3" width="52" height="64" rx="9" stroke="currentColor" stroke-width="2"/><path d="M4 18h50" stroke="currentColor"/><circle cx="29" cy="41" r="17" stroke="currentColor" stroke-width="2"/><path d="M16 42c7-8 15 8 26 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="11" r="2" fill="currentColor"/><path d="M36 11h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+                <div class="staff-identity-content">
+                    <div class="staff-photo-preview" data-photo-preview data-saved-photo="{{ $employee->profile_photo_url }}">
+                        <span data-photo-initial @if($employee->profile_photo_url) hidden @endif>{{ mb_strtoupper(mb_substr($employee->name, 0, 1)) }}</span>
+                        <img data-photo-image src="{{ $employee->profile_photo_url ?: asset('img/logo.png') }}" alt="Your profile photo" @if(!$employee->profile_photo_url) hidden @endif>
+                        <span class="staff-photo-camera" aria-hidden="true"><i class="bi bi-camera"></i></span>
                     </div>
-                    <div class="col-md-8">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="name" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="name" name="name" value="{{ $employee->name }}" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="email" name="email" value="{{ $employee->email }}" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <input type="text" class="form-control" id="phone" name="phone" value="{{ $employee->phone }}" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="role" class="form-label">Role</label>
-                                <input type="text" class="form-control" id="role" value="{{ $employee->role }}" readonly>
-                            </div>
-                        </div>
-
-                        <!-- Password Change Section -->
-                        <div class="password-section">
-                            <h5 class="mb-3">Change Password</h5>
-                            <div class="row">
-                                <div class="col-md-12 mb-3">
-                                    <label for="current_password" class="form-label">Current Password</label>
-                                    <div class="input-group">
-                                        <input type="password" class="form-control" id="current_password" name="current_password">
-                                        <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="new_password" class="form-label">New Password</label>
-                                    <div class="input-group">
-                                        <input type="password" class="form-control" id="new_password" name="new_password">
-                                        <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="new_password_confirmation" class="form-label">Confirm New Password</label>
-                                    <div class="input-group">
-                                        <input type="password" class="form-control" id="new_password_confirmation" name="new_password_confirmation">
-                                        <button class="btn btn-outline-secondary" type="button" id="toggleConfirmNewPassword">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-outline-secondary" id="resetForm">Reset</button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Save Changes
-                            </button>
-                        </div>
-                    </div>
+                    <h2>{{ $employee->name }}</h2><p class="staff-identity-position">{{ $employee->position }}</p>
+                    <input class="staff-photo-input" type="file" name="photo" id="staff-photo" accept="image/jpeg,image/png,image/webp" aria-describedby="staff-photo-help staff-photo-feedback">
+                    <label class="btn btn-light btn-sm staff-photo-upload" for="staff-photo"><i class="bi bi-upload me-2" aria-hidden="true"></i>{{ $employee->profile_photo_url ? 'Change photo' : 'Upload photo' }}</label>
+                    <p class="staff-photo-help" id="staff-photo-help">JPG, PNG or WebP. Up to 3 MB, 64–4,096 pixels per side. Your photo updates when you save.</p>
+                    @if($employee->profile_photo_path)<label class="staff-photo-remove"><input class="form-check-input mt-0" type="checkbox" name="remove_photo" value="1" data-remove-photo>Remove current photo</label>@endif
+                    <p class="staff-photo-feedback" id="staff-photo-feedback" role="status" data-photo-feedback></p>
+                    <dl class="staff-identity-meta"><div><dt>Position</dt><dd>{{ $employee->position }}</dd></div><div><dt>Shift</dt><dd>{{ $employee->shift }}</dd></div><div><dt>Joined</dt><dd>{{ $employee->hire_date?->format('M j, Y') }}</dd></div></dl>
                 </div>
-            </form>
+            </aside>
+            <div class="staff-profile-fields">
+                <section class="staff-profile-section" aria-labelledby="staff-contact-title">
+                    <div class="staff-profile-section-heading"><i class="bi bi-person-vcard" aria-hidden="true"></i><h2 id="staff-contact-title">Personal details</h2></div>
+                    <div class="staff-profile-form-grid">
+                        <div class="staff-field-wide"><label for="staff-name" class="form-label">Full name</label><input class="form-control @error('name') is-invalid @enderror" id="staff-name" name="name" autocomplete="name" value="{{ old('name', $employee->name) }}" required maxlength="255">@error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+                        <div class="staff-field-wide"><label for="staff-email" class="form-label">Work email</label><input class="form-control @error('email') is-invalid @enderror" type="email" id="staff-email" name="email" autocomplete="email" value="{{ old('email', $employee->email) }}" required maxlength="255"><div class="form-text">Use this email to sign in.</div>@error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+                        <div class="staff-field-wide"><label for="staff-contact" class="form-label">Phone number</label><input class="form-control @error('contact') is-invalid @enderror" type="tel" id="staff-contact" name="contact" autocomplete="tel" value="{{ old('contact', $employee->contact) }}" required maxlength="20">@error('contact')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+                    </div>
+                </section>
+                <details class="staff-profile-section staff-password-details" @if($errors->hasAny(['current_password', 'new_password'])) open @endif>
+                    <summary><i class="bi bi-shield-lock" aria-hidden="true"></i><span><strong>Change password</strong><small>Only fill this in when you want a new password.</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+                    <div class="staff-profile-form-grid">
+                        <div class="staff-field-wide"><label class="form-label" for="staff-current-password">Current password</label><div class="staff-password-input"><input class="form-control" type="password" name="current_password" id="staff-current-password" autocomplete="current-password"><button type="button" data-toggle-password="staff-current-password" aria-pressed="false" aria-label="Show current password">Show</button></div></div>
+                        <div><label class="form-label" for="staff-new-password">New password</label><div class="staff-password-input"><input class="form-control" type="password" name="new_password" id="staff-new-password" autocomplete="new-password" minlength="8"><button type="button" data-toggle-password="staff-new-password" aria-pressed="false" aria-label="Show new password">Show</button></div><div class="form-text">At least 8 characters.</div></div>
+                        <div><label class="form-label" for="staff-confirm-password">Confirm password</label><div class="staff-password-input"><input class="form-control" type="password" name="new_password_confirmation" id="staff-confirm-password" autocomplete="new-password" minlength="8"><button type="button" data-toggle-password="staff-confirm-password" aria-pressed="false" aria-label="Show password confirmation">Show</button></div></div>
+                    </div>
+                </details>
+                <div class="staff-profile-actions"><button class="btn btn-light" type="reset">Reset changes</button><button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-2" aria-hidden="true"></i>Save changes</button></div>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
 @endsection
-
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle current password
-    const toggleCurrentPassword = document.querySelector('#toggleCurrentPassword');
-    const currentPassword = document.querySelector('#current_password');
-
-    toggleCurrentPassword.addEventListener('click', function() {
-        const type = currentPassword.getAttribute('type') === 'password' ? 'text' : 'password';
-        currentPassword.setAttribute('type', type);
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
-    });
-
-    // Toggle new password
-    const toggleNewPassword = document.querySelector('#toggleNewPassword');
-    const newPassword = document.querySelector('#new_password');
-
-    toggleNewPassword.addEventListener('click', function() {
-        const type = newPassword.getAttribute('type') === 'password' ? 'text' : 'password';
-        newPassword.setAttribute('type', type);
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
-    });
-
-    // Toggle confirm new password
-    const toggleConfirmNewPassword = document.querySelector('#toggleConfirmNewPassword');
-    const confirmNewPassword = document.querySelector('#new_password_confirmation');
-
-    toggleConfirmNewPassword.addEventListener('click', function() {
-        const type = confirmNewPassword.getAttribute('type') === 'password' ? 'text' : 'password';
-        confirmNewPassword.setAttribute('type', type);
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
-    });
-
-    const form = document.getElementById('profileForm');
-    const resetBtn = document.getElementById('resetForm');
-    const originalData = {
-        name: form.querySelector('#name').value,
-        email: form.querySelector('#email').value,
-        phone: form.querySelector('#phone').value
-    };
-
-    // Handle form submission
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        
-        // Only include password fields if they are filled
-        if (!data.current_password) {
-            delete data.current_password;
-            delete data.new_password;
-            delete data.new_password_confirmation;
-        }
-
-        fetch('{{ route("staff.profile.update") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: data.message,
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(() => {
-                    // Update original data after successful save
-                    originalData.name = form.querySelector('#name').value;
-                    originalData.email = form.querySelector('#email').value;
-                    originalData.phone = form.querySelector('#phone').value;
-                    
-                    // Clear password fields
-                    form.querySelector('#current_password').value = '';
-                    form.querySelector('#new_password').value = '';
-                    form.querySelector('#new_password_confirmation').value = '';
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: data.message
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'An error occurred while updating your profile.'
-            });
-        });
-    });
-
-    // Handle reset button
-    resetBtn.addEventListener('click', function() {
-        Swal.fire({
-            title: 'Reset Changes?',
-            text: 'Are you sure you want to reset all changes?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, reset it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.querySelector('#name').value = originalData.name;
-                form.querySelector('#email').value = originalData.email;
-                form.querySelector('#phone').value = originalData.phone;
-                form.querySelector('#current_password').value = '';
-                form.querySelector('#new_password').value = '';
-                form.querySelector('#new_password_confirmation').value = '';
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Reset!',
-                    text: 'Your changes have been reset.',
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-            }
-        });
-    });
-});
-</script>
+<script src="{{ asset('js/staff-profile.js') }}?v={{ filemtime(public_path('js/staff-profile.js')) }}" defer></script>
 @endpush

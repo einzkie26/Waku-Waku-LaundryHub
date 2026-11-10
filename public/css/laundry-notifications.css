@@ -1,0 +1,65 @@
+.laundry-notifications { width:440px; max-width:calc(100vw - 24px); height:650px; max-height:calc(100dvh - 28px); margin:auto 20px auto auto; padding:0; border:1px solid var(--line); border-radius:24px; background:#fff; color:var(--ink); box-shadow:0 24px 100px #17352f30; overflow:hidden; }
+.laundry-notifications[open] { display:flex; flex-direction:column; animation:laundry-inbox-enter .28s ease both; }
+.laundry-notifications::backdrop { background:#17352f45; backdrop-filter:blur(3px); }
+.laundry-notification-header { display:flex; justify-content:space-between; gap:12px; align-items:center; padding:24px 24px 18px; flex:none; }
+.laundry-notification-eyebrow { font-size:9px; font-weight:800; letter-spacing:.15em; color:var(--muted); }
+.laundry-notification-header h2 { font-size:1.4rem; margin:6px 0 0; display:flex; align-items:center; gap:10px; }
+.laundry-notification-header h2>span { display:grid; place-items:center; min-width:25px; height:25px; padding:0 6px; border-radius:8px; background:var(--mint); color:var(--green); font:700 11px 'DM Sans',sans-serif; letter-spacing:0; }
+.laundry-device-alerts { display:flex; align-items:center; gap:11px; padding:15px; margin:0 20px 18px; border:1px solid var(--line); border-radius:15px; background:var(--paper); flex:none; }
+.laundry-device-icon { display:grid; place-items:center; color:var(--green); font-size:22px; }
+.laundry-device-alerts>div { min-width:0; flex:1; }
+.laundry-device-alerts strong { font-size:.8rem; }
+.laundry-device-alerts p { color:var(--muted); font-size:.69rem; line-height:1.5; margin:3px 0 0; }
+.laundry-alert-toggle { flex:none; border:1px solid var(--line); border-radius:9px; background:#fff; color:var(--green); padding:7px 10px; font-size:.7rem; font-weight:700; }
+.laundry-alert-toggle[aria-pressed="true"] { background:var(--mint); }
+.laundry-alert-toggle:disabled { opacity:.65; }
+.laundry-inbox-toolbar,.laundry-inbox-footer { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 24px; color:var(--muted); font-size:.7rem; flex:none; }
+.laundry-inbox-toolbar { border-bottom:1px solid var(--line); padding-top:0; }
+.laundry-inbox-toolbar button,.laundry-inbox-footer button { border:0; background:transparent; padding:4px 0; color:var(--green); font-size:inherit; font-weight:700; }
+.laundry-inbox-toolbar button:disabled { opacity:.4; }
+.laundry-notification-list { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+.laundry-notification-item { display:flex; gap:12px; position:relative; padding:19px 24px; border-bottom:1px solid var(--line); }
+.laundry-notification-item.is-unread { background:#f4f8f3; }
+.laundry-notification-item>i { display:grid; place-items:center; flex:none; width:35px; height:35px; border:1px solid var(--line); border-radius:11px; background:#fff; color:var(--green); font-size:16px; }
+.laundry-notification-item>div { min-width:0; flex:1; }
+.laundry-notification-item h3 { font-size:.82rem; margin:0 0 5px; letter-spacing:-.02em; }
+.laundry-notification-item p { font-size:.74rem; color:var(--muted); line-height:1.5; margin:0 0 8px; overflow-wrap:anywhere; }
+.laundry-notification-item time { font-size:.65rem; color:var(--muted); }
+.laundry-notification-item footer { display:flex; align-items:center; gap:14px; margin-top:10px; }
+.laundry-notification-item a,.laundry-notification-item footer button { font-size:.7rem; font-weight:700; padding:0; background:transparent; border:0; color:var(--green); }
+.laundry-notification-item footer button { color:var(--muted); }
+.laundry-inbox-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:230px; padding:30px; text-align:center; }
+.laundry-inbox-empty>i { display:grid; place-items:center; width:55px; height:55px; border-radius:18px; background:var(--mint); color:var(--green); font-size:24px; margin-bottom:18px; }
+.laundry-inbox-empty strong { font-size:.88rem; }
+.laundry-inbox-empty p { color:var(--muted); font-size:.76rem; margin:6px 0 0; max-width:250px; }
+.laundry-inbox-footer { border-top:1px solid var(--line); }
+.laundry-toast-stack { position:fixed; right:22px; bottom:22px; z-index:1060; display:flex; flex-direction:column; gap:10px; width:min(370px,calc(100vw - 32px)); pointer-events:none; }
+.laundry-toast { pointer-events:auto; display:flex; align-items:start; gap:12px; padding:17px; border:1px solid #bfd5c6; border-radius:17px; background:#fff; box-shadow:0 8px 45px #17352f26; animation:laundry-toast-enter .3s ease both; }
+.laundry-toast>i { display:grid; place-items:center; flex:none; width:34px; height:34px; border-radius:11px; background:var(--mint); color:var(--green); }
+.laundry-toast>div { min-width:0; flex:1; }
+.laundry-toast strong { display:block; font-size:.8rem; }
+.laundry-toast p { margin:4px 0 7px; color:var(--muted); font-size:.73rem; line-height:1.5; overflow-wrap:anywhere; }
+.laundry-toast a { font-size:.72rem; font-weight:700; }
+.laundry-toast>button { border:0; padding:0 2px; background:transparent; color:var(--muted); font-size:15px; }
+@keyframes laundry-inbox-enter { from { opacity:0; transform:translateX(20px) scale(.98); } to { opacity:1; transform:translateX(0) scale(1); } }
+@keyframes laundry-toast-enter { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
+.notification-icon-button,.notification-bell { display:grid; place-items:center; flex:none; width:40px; height:40px; padding:0; border:1px solid var(--line); border-radius:12px; background:#fff; color:var(--green); font-size:1.15rem; }
+.notification-icon-button:hover,.notification-bell:hover { background:var(--mint); }
+.notification-icon-button:focus-visible,.notification-bell:focus-visible,.laundry-notifications button:focus-visible { outline:3px solid #77b9a3; outline-offset:3px; }
+.notification-bell { position:relative; }
+.notification-unread { display:inline-grid; place-items:center; flex:none; min-width:20px; height:20px; padding:0 5px; margin-left:auto; border-radius:20px; background:var(--green); color:#fff; font:700 10px/1 'DM Sans',sans-serif; }
+.notification-bell .notification-unread { position:absolute; top:-7px; right:-7px; min-width:21px; height:21px; border:2px solid #fff; }
+.admin-notification-link { flex:none; width:100%; background:transparent; text-align:left; }
+.admin-notification-link .notification-unread { background:#bed7a9; color:#17483b; }
+.admin-radial-choice .notification-unread { position:absolute; top:-3px; right:0; }
+@media(max-width:767px) {
+    .laundry-notifications { margin:auto; border-radius:20px; }
+    .laundry-toast-stack { bottom:16px; right:16px; }
+}
+@media(max-width:420px) {
+    .laundry-notification-header { padding:20px; }
+    .laundry-device-alerts { margin:0 15px 16px; padding:12px; }
+    .laundry-inbox-toolbar,.laundry-inbox-footer { padding-left:20px; padding-right:20px; }
+    .admin-topbar-actions { gap:10px; }
+}
+@media(prefers-reduced-motion:reduce) { .laundry-notifications[open],.laundry-toast { animation:none; } }

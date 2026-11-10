@@ -23,6 +23,7 @@
                 <i class="bi bi-{{ $icon }}" aria-hidden="true"></i><span>{{ $label }}</span>
             </a>
         @endforeach
+        <button class="admin-radial-choice" data-nav-choice data-open-notifications type="button" tabindex="-1" aria-haspopup="dialog" aria-controls="admin-notifications"><i class="bi bi-bell" aria-hidden="true"></i><span>Notifications</span><b class="notification-unread" data-notification-unread hidden>0</b></button>
     </nav>
     <div class="admin-navigation-switch admin-radial-mode-switch" role="group" aria-label="Navigation style" data-radial-mode-controls hidden inert>
         <button type="button" data-navigation-mode="radial" aria-pressed="true">Menu+</button>
@@ -46,6 +47,7 @@
             <a class="admin-sidebar-link {{ request()->routeIs($pattern) ? 'active' : '' }}" href="{{ route($route) }}" data-sidebar-link @if($route === 'settings.profile') data-bs-toggle="modal" data-bs-target="#admin-settings-modal" @endif @if(request()->routeIs($pattern)) aria-current="page" @endif><span class="admin-sidebar-link-icon"><i class="bi bi-{{ $icon }}" aria-hidden="true"></i></span><span>{{ $label }}</span>@if(request()->routeIs($pattern))<span class="admin-sidebar-current-dot" aria-hidden="true"></span>@endif</a>
         @endforeach
     </nav>
+    <button class="admin-sidebar-link admin-notification-link" type="button" data-open-notifications aria-haspopup="dialog" aria-controls="admin-notifications"><span class="admin-sidebar-link-icon"><i class="bi bi-bell" aria-hidden="true"></i></span><span>Notifications</span><span class="notification-unread" data-notification-unread hidden>0</span></button>
     <div class="admin-sidebar-mode-footer">
         <div class="admin-sidebar-mode-label"><span>Navigation style</span><i class="bi bi-sliders2" aria-hidden="true"></i></div>
         <div class="admin-navigation-switch admin-sidebar-mode-switch" role="group" aria-label="Navigation style">

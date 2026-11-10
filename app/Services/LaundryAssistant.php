@@ -22,6 +22,9 @@ class LaundryAssistant
             }
         }
         $fallback = LaundryKnowledge::reply($topic);
+        if (! config('laundry-assistant.openai_enabled', false)) {
+            return $fallback;
+        }
         $key = config('laundry-assistant.openai_key');
         if (! is_string($key) || trim($key) === '') {
             return $fallback;

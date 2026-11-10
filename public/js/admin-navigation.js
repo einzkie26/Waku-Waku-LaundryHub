@@ -196,7 +196,14 @@
             return trigger.closest('#admin-sidebar') ? trigger
                 : sidebar.querySelector('[data-bs-target="#admin-settings-modal"]');
         };
-        window.WakuAdminNavigation = { focusTarget };
+        window.WakuAdminNavigation = { focusTarget, prepareDialog(trigger) {
+            finishTransition(false);
+            finishDrag();
+            const returnTo = focusTarget(trigger) || trigger;
+            setOpen(false);
+            setDrawer(false);
+            return returnTo;
+        } };
         sidebar.querySelectorAll('[data-sidebar-link]').forEach((link, index) => link.style.setProperty('--sidebar-index', index));
 
         const clamp = value => Math.max(0, Math.min(1, value));

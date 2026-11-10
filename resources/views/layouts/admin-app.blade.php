@@ -17,6 +17,7 @@
     <link href="{{ asset('css/admin-workspace.css') }}" rel="stylesheet">
     <link href="{{ asset('css/admin-navigation.css') }}?v={{ filemtime(public_path('css/admin-navigation.css')) }}" rel="stylesheet">
     <link href="{{ asset('css/admin-navigation-modes.css') }}?v={{ filemtime(public_path('css/admin-navigation-modes.css')) }}" rel="stylesheet">
+    <link href="{{ asset('css/laundry-notifications.css') }}?v={{ filemtime(public_path('css/laundry-notifications.css')) }}" rel="stylesheet">
     @stack('styles')
 </head>
 <body class="admin-shell admin-radial-shell">
@@ -31,10 +32,12 @@
         </div>
     </main>
     @include('admin.settings.modal')
+    @include('partials.notifications', ['notificationRole' => 'admin'])
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('js/laundryhub.js') }}?v={{ filemtime(public_path('js/laundryhub.js')) }}" defer></script>
     <script src="{{ asset('js/admin-navigation.js') }}?v={{ filemtime(public_path('js/admin-navigation.js')) }}" defer></script>
     <script src="{{ asset('js/admin-workspace.js') }}?v={{ filemtime(public_path('js/admin-workspace.js')) }}" defer></script>
+    <script src="{{ asset('js/laundry-notifications.js') }}?v={{ filemtime(public_path('js/laundry-notifications.js')) }}" defer></script>
     @stack('scripts')
     @yield('scripts')
 </body>

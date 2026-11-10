@@ -15,7 +15,7 @@ class LaundryAssistantTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['laundry-assistant.openai_key' => null, 'laundry-assistant.bixby_token' => null]);
+        config(['laundry-assistant.openai_enabled' => true, 'laundry-assistant.openai_key' => null, 'laundry-assistant.bixby_token' => null]);
         Http::preventStrayRequests();
     }
 
@@ -51,6 +51,16 @@ class LaundryAssistantTest extends TestCase
         }
         Http::assertNothingSent();
         $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_free_mode_uses_the_guide_even_when_an_openai_key_is_saved(): void
+    {
+        config(['laundry-assistant.openai_enabled' => false, 'laundry-assistant.openai_key' => 'saved-key-must-not-be-used']);
+        $this->postJson(route('assistant.message'), ['message' => 'What are your prices?'])
+            ->assertOk()->assertJsonPath('source', 'faq')->assertJsonPath('topic', 'prices')
+            ->assertJsonMissingPath('notice')->assertDontSee('saved-key-must-not-be-used');
+        $this->get('/')->assertOk()->assertSee('Your Laundryhub guide')->assertDontSee('AI laundry assistant');
+        Http::assertNothingSent();
     }
 
     public function test_a_short_follow_up_keeps_the_previous_laundry_topic(): void

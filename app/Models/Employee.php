@@ -18,21 +18,21 @@ class Employee extends Authenticatable
         'shift',
         'status',
         'password',
-        'is_active'
+        'is_active',
     ];
-    
+
     protected $hidden = [
         'password',
         'remember_token',
     ];
-    
+
     protected $casts = [
         'is_active' => 'boolean',
         'hire_date' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-    
+
     protected $attributes = [
         'is_active' => true,
     ];
@@ -40,5 +40,17 @@ class Employee extends Authenticatable
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function notifications()
+    {
+        return $this->morphMany(Notification::class, 'notifiable');
+    }
+
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        return $this->profile_photo_path
+            ? route('staff.profile.photo', ['v' => $this->updated_at?->getTimestamp()])
+            : null;
     }
 }
